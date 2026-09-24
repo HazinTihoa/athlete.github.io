@@ -1,13 +1,21 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATHLETE · Rally Lab</title><link rel="icon" href="data:,"></head><body>
 <header><a class="brand" href="./">ATHLETE<span>RALLY LAB</span></a><div class="local"><i></i> ALL IN YOUR BROWSER</div><a href="#about" class="about-link">关于这个实验 ↗</a></header>
 <main><section class="intro"><div><p class="eyebrow">HUMANOID TENNIS / INTERACTIVE DEMO</p><h1>你来发球。<em>让机器人回击。</em></h1><p class="subtitle">调整来球，观察学到的运动策略如何接球、挥拍与保持平衡。</p></div><div class="model-label">UNITREE G1 <span>×</span> GPU3-2<br><small>POLICY 45000 · LOCAL PREVIEW</small></div></section>
+<section class="interaction-guide" aria-labelledby="interaction-title">
+  <div class="interaction-lead"><span class="guide-ball" aria-hidden="true"></span><div><h2 id="interaction-title">拖住黄色球，松手让它飞！</h2><p>鼠标左键拖球即可施力，松手后球自由飞行。</p></div><span class="guide-label">交互指南</span></div>
+  <ul class="interaction-shortcuts">
+    <li><span><kbd>Ctrl</kbd> + 拖动空白</span><span>不用点中球，也能牵引</span></li>
+    <li><span><kbd>Shift</kbd> + 拖球</span><span>沿水平面移动球</span></li>
+    <li><span>按 <kbd>B</kbd></span><span>把球放回手边，再试一次</span></li>
+  </ul>
+</section>
 <div class="lab"><section id="viewport" aria-label="网球机器人交互仿真"><div class="scene-top"><span class="badge" id="state">正在加载</span><span class="ball-speed" title="物理球总速度，上限 8 m/s">球速 <strong id="ball-speed">0.00</strong> / 8 m/s</span></div><div id="loading"><span class="spinner"></span><strong id="load-text">准备球场…</strong><p>首次加载需要下载模型与物理引擎，请稍候。</p></div><div class="scene-bottom"><span>拖球施力 · 拖空白旋转 · 滚轮缩放</span><button id="view">重置视角 ↗</button></div></section>
 <aside><div class="panel-heading"><span class="eyebrow">01 / SERVE</span><h2>创造你的来球</h2></div><div class="segmented"><button id="forehand" class="selected">正手侧</button><button id="backhand">反手侧</button></div>
 <label>左右位置 <output id="lateral-value">−0.65 m</output><input id="lateral" type="range" min="-1.3" max="1.3" step=".05" value="-.65"></label>
 <label>来球速度 <output id="speed-value">3.5 m/s</output><input id="speed" type="range" min="2.8" max="4.2" step=".1" value="3.5"></label>
 <label>向上速度 <output id="lift-value">4.5 m/s</output><input id="lift" type="range" min="3" max="5.5" step=".1" value="4.5"></label>
 <button id="serve" class="primary" disabled>发球 <span>SPACE ↗</span></button><label class="toggle"><input id="auto" type="checkbox"> 连续发球 <small>每 7 秒一次</small></label>
-<div class="divider"></div><div class="panel-heading"><span class="eyebrow">02 / EXPLORE</span><h2>观察策略的反应</h2></div><div class="actions"><button id="pause" disabled>暂停 / 继续</button><button id="reset" disabled>重置机器人</button></div><button id="ball-reset" disabled>球回到手边 · B</button><button id="push" disabled>轻推机器人 ↗</button><p class="hint">拖住黄色球即可施力，松手后自由飞行。Ctrl + 拖动空白也能牵引球；Shift + 拖球沿水平面移动。B 将球放回手边。</p>
+<div class="divider"></div><div class="panel-heading"><span class="eyebrow">02 / EXPLORE</span><h2>观察策略的反应</h2></div><div class="actions"><button id="pause" disabled>暂停 / 继续</button><button id="reset" disabled>重置机器人</button></div><button id="ball-reset" disabled>球回到手边 · B</button><button id="push" disabled>轻推机器人 ↗</button>
 </aside></div>
 <div class="readouts"><div><small>当前回合</small><strong id="shot">等待发球</strong></div><div><small>策略计算 + 物理步进</small><strong id="latency">— <span>ms / 帧</span></strong></div><div><small>仿真时间</small><strong id="simtime">0.00 <span>s</span></strong></div><div><small>运行方式</small><strong>本地浏览器 <span>无需 GPU 服务器</span></strong></div></div>
 <footer id="about"><p><strong>一次真实的策略推理。</strong> 机器人动作来自训练好的网球策略；球、球拍和机器人在浏览器内实时进行物理仿真。拖尾表示球经过的路径，青色圆环表示回球目标。</p><p>本地原型 · 无速度平滑 · 未主动采样失败球<br>MuJoCo + ONNX Runtime Web · 桌面 Chrome / Edge 优先</p></footer></main><script type="module" src="/src/main.js"></script></body></html>

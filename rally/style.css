@@ -3,3 +3,17 @@
 #ball-reset{width:100%;border:1px solid #b9ca9f;background:#edf4dd;color:#3f5d39;padding:10px 8px;border-radius:5px;font-size:11px;margin-bottom:8px}canvas{touch-action:none}
 
 .ball-speed{display:flex;align-items:baseline;gap:6px;color:#eef6df;background:#101d2aeb;border:1px solid #455667;padding:7px 11px;border-radius:8px;font-size:11px;white-space:nowrap}.ball-speed strong{color:#efff38;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Keep the primary interaction visible before the court, without covering it. */
+.interaction-guide{margin:0 0 18px;padding:20px 24px;background:#172c39;color:#f3f7fa;border:1px solid #3b5664;border-top:3px solid #edff57;border-radius:12px}
+.interaction-lead{display:flex;align-items:center;gap:14px}
+.guide-ball{flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:#edff57;box-shadow:0 0 0 6px #edff5714}
+.interaction-lead h2{font-size:20px;line-height:1.4;font-weight:700;margin:0 0 4px;color:#edff57}
+.interaction-lead p{font-size:14px;line-height:1.6;margin:0;color:#e1eaf0}
+.guide-label{margin-left:auto;font-size:12px;font-weight:650;letter-spacing:2px;color:#c5d6e0;white-space:nowrap}
+.interaction-shortcuts{list-style:none;padding:16px 0 0;margin:16px 0 0;border-top:1px solid #3b5362;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.interaction-shortcuts li{display:flex;flex-direction:column;gap:7px;font-size:14px;line-height:1.6}
+.interaction-shortcuts li>span:first-child{font-weight:650;color:#fff}
+.interaction-shortcuts li>span:last-child{color:#c5d6e0;font-size:13px}
+.interaction-guide kbd{display:inline-block;min-width:27px;padding:1px 7px;border:1px solid #718895;border-bottom-width:3px;border-radius:5px;background:#2c4352;color:#faffcf;font:600 13px/1.5 ui-monospace,monospace;text-align:center}
+@media(max-width:650px){.interaction-guide{padding:16px}.interaction-lead{gap:12px}.interaction-lead h2{font-size:17px}.interaction-lead p{font-size:13px}.guide-label{display:none}.interaction-shortcuts{grid-template-columns:1fr;gap:12px;padding-top:14px;margin-top:14px}.interaction-shortcuts li{flex-direction:row;flex-wrap:wrap;gap:4px 12px;align-items:baseline}.guide-ball{flex-basis:20px;width:20px;height:20px}}
