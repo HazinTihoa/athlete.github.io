@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import './style.css';
-const $=id=>document.getElementById(id),viewport=$('viewport');
+const uiRoot=window.__ATHLETE_ROOT__??document;
+const $=id=>uiRoot.getElementById(id),viewport=$('viewport');
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.setClearColor('#13212d');renderer.toneMapping=THREE.ACESFilmicToneMapping;viewport.prepend(renderer.domElement);
 const scene=new THREE.Scene();scene.fog=new THREE.Fog('#13212d',22,65);
 const camera=new THREE.PerspectiveCamera(40,1,.03,100);camera.up.set(0,0,1);
@@ -64,7 +65,7 @@ function serve(){endBallDrag();if(ready)send('launch',values());}
 $('serve').onclick=serve;$('pause').onclick=()=>{endBallDrag();send('pause');};$('reset').onclick=()=>{endBallDrag();send('reset');$('auto').checked=false;send('auto',{value:false});};$('ball-reset').onclick=()=>{endBallDrag();$('auto').checked=false;send('ball-reset');};$('push').onclick=()=>send('push');$('auto').onchange=e=>send('auto',{value:e.target.checked,...values()});
 for(const id of ['lateral','speed','lift'])$(id).oninput=()=>{$(`${id}-value`).textContent=`${Number($(id).value).toFixed(id==='lateral'?2:1)} ${id==='lateral'?'m':'m/s'}`;send('settings',values());};
 for(const [id,y]of [['forehand',-.65],['backhand',.65]])$(id).onclick=()=>{$('lateral').value=y;$('lateral').oninput();['forehand','backhand'].forEach(k=>$(k).classList.toggle('selected',id===k));};
-window.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','BUTTON'].includes(document.activeElement.tagName)){e.preventDefault();serve();}if(e.code==='KeyR')$('reset').click();if(e.code==='KeyB')$('ball-reset').click();});
+window.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','BUTTON'].includes((uiRoot.activeElement??document.activeElement).tagName)){e.preventDefault();serve();}if(e.code==='KeyR')$('reset').click();if(e.code==='KeyB')$('ball-reset').click();});
 // Pointer capture keeps the spring attached when the cursor leaves the ball.
 // Empty-space drags still go to OrbitControls; Ctrl uses the preselected ball.
 const pointerRay=new THREE.Raycaster(),dragPlane=new THREE.Plane();
