@@ -17,3 +17,10 @@
 .interaction-shortcuts li>span:last-child{color:#c5d6e0;font-size:13px}
 .interaction-guide kbd{display:inline-block;min-width:27px;padding:1px 7px;border:1px solid #718895;border-bottom-width:3px;border-radius:5px;background:#2c4352;color:#faffcf;font:600 13px/1.5 ui-monospace,monospace;text-align:center}
 @media(max-width:650px){.interaction-guide{padding:16px}.interaction-lead{gap:12px}.interaction-lead h2{font-size:17px}.interaction-lead p{font-size:13px}.guide-label{display:none}.interaction-shortcuts{grid-template-columns:1fr;gap:12px;padding-top:14px;margin-top:14px}.interaction-shortcuts li{flex-direction:row;flex-wrap:wrap;gap:4px 12px;align-items:baseline}.guide-ball{flex-basis:20px;width:20px;height:20px}}
+
+/* Compact the standalone UI when displayed inside the project homepage. */
+.embedded body>header,.embedded .intro,.embedded footer{display:none}
+.embedded main{max-width:none;padding:16px}
+.embedded .interaction-guide{margin-bottom:14px}
+.embedded .readouts{padding:18px 0 0;border:0}
+@media(max-width:650px){.embedded main{padding:10px}.embedded .readouts{gap:14px}}

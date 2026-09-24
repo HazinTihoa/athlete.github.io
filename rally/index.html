@@ -1,4 +1,12 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATHLETE · Rally Lab</title><link rel="icon" href="data:,"><link rel="stylesheet" href="./style.css"></head><body>
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATHLETE · Rally Lab</title><link rel="icon" href="data:,"><script>
+if (new URLSearchParams(location.search).has('embed')) {
+  document.documentElement.classList.add('embedded');
+  window.addEventListener('DOMContentLoaded', () => {
+    const main = document.querySelector('main');
+    new ResizeObserver(() => parent.postMessage({type:'athlete-rally-height',height:main.getBoundingClientRect().height + 2}, '*')).observe(main);
+  });
+}
+</script><link rel="stylesheet" href="./style.css"></head><body>
 <header><a class="brand" href="../">ATHLETE<span>RALLY LAB</span></a><div class="local"><i></i> ALL IN YOUR BROWSER</div><a href="../" class="about-link">Project page ↗</a></header>
 <main><section class="intro"><div><p class="eyebrow">HUMANOID TENNIS / INTERACTIVE DEMO</p><h1>你来发球。<em>让机器人回击。</em></h1><p class="subtitle">调整来球，观察学到的运动策略如何接球、挥拍与保持平衡。</p></div><div class="model-label">UNITREE G1 <span>×</span> GPU3-2<br><small>POLICY 45000 · BROWSER DEMO</small></div></section>
 <section class="interaction-guide" aria-labelledby="interaction-title">

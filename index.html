@@ -17,7 +17,9 @@
 </style>
     
 
-  </head>
+  <link rel="stylesheet" href="./assets/home-demo.css">
+<script defer src="./assets/home-demo.js"></script>
+</head>
   <body>
     <a id="skip-to-content" href="#content">Skip to the content.</a>
 
@@ -26,7 +28,7 @@
       <h2 class="project-tagline">Learning humanoid tennis skills</h2>
       
         <a href="https://anonymous.4open.science/r/ATHLETE2027/" class="btn">View anonymous repository</a>
-        <a href="./rally/" class="btn">Try interactive demo</a>
+        <a href="#interactive-demo" class="btn">Try interactive demo</a>
       
       
     </header>
@@ -36,12 +38,21 @@
 
 <p>ATHLETE explores learning dynamic humanoid tennis skills from reusable locomotion datasets and video demonstrations.</p>
 
-<section aria-labelledby="interactive-demo">
+<section class="home-rally" aria-labelledby="interactive-demo">
 <h2 id="interactive-demo">Interactive Demo</h2>
-<p>Try the trained humanoid tennis policy directly in your browser. Serve forehand or backhand balls, drag the ball to apply a physical perturbation, and observe the robot's response.</p>
-<p><a href="./rally/" style="display:inline-block;padding:12px 22px;border-radius:8px;color:white;background:#157878;font-weight:700;text-decoration:none">Launch Rally Demo →</a></p>
-<ul><li>No installation or server GPU required: physics and inference run on your device.</li><li>Press <strong>B</strong> to bring the ball nearby. Drag the ball, or hold <strong>Ctrl</strong> and drag on the court; release to let it fly.</li><li>Interactive ball speed is limited to <strong>8 m/s</strong>. Desktop Chrome or Edge is recommended.</li></ul>
-<p>The first visit downloads the physics engine, robot assets and policy; allow a moment for loading.</p>
+<p>Play with the trained humanoid tennis policy right here. Physics and policy inference run entirely in your browser.</p>
+<div class="rally-embed" data-rally-embed>
+  <div class="rally-start-screen">
+    <span class="rally-kicker">ATHLETE / LIVE PLAYGROUND</span>
+    <h3>你来发球，让机器人回击。</h3>
+    <p>拖住黄色球施力，松手让它飞。<br><kbd>Ctrl</kbd> + 拖动空白牵引球 · <kbd>Shift</kbd> + 拖球沿水平面移动 · <kbd>B</kbd> 把球放回手边</p>
+    <button type="button" class="rally-start" aria-controls="rally-frame">开始体验 / Start demo ↗</button>
+    <p class="rally-download">点击后加载模型与物理引擎；首次加载请稍候。推荐桌面 Chrome / Edge，球速上限 8 m/s。</p>
+  </div>
+  <iframe id="rally-frame" title="ATHLETE interactive tennis simulation" data-src="./rally/?embed=1" hidden></iframe>
+</div>
+<p class="rally-alternative"><a href="./rally/" target="_blank" rel="noopener">在独立页面打开 / Open full demo ↗</a></p>
+<noscript><p>Enable JavaScript to use the interactive demo.</p></noscript>
 </section>
 <h2 id="project-materials">Project Materials</h2>
 

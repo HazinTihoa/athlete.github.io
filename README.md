@@ -19,7 +19,8 @@ GitHub Pages rebuilds the site after changes are committed to `main`.
 ## Interactive Rally Demo
 
 Both the GitHub Pages homepage (`index.md`) and anonymous static homepage
-(`index.html`) link to `./rally/`. This relative link keeps anonymous visitors
+(`index.html`) embed `./rally/?embed=1` after the visitor clicks Start demo, and retain a
+standalone `./rally/` link. Relative URLs keep anonymous visitors
 on their current host. The demo runs MuJoCo, ONNX policy inference, and rendering
 in the visitor's browser; there is no inference server or analytics endpoint.
 
@@ -51,7 +52,9 @@ external identity-bearing host, or third-party model CDN is required.
 Hex encoding avoids textual identity anonymization altering encoded binary data.
 The compressed payload is about 17.1 MB before hex transport encoding; actual
 network transfer depends on the host's HTTP compression. The page downloads
-these resources only after the visitor opens the demo.
+these resources only after the visitor starts the embedded demo or opens its standalone page.
+Homepage embed styling and loading logic live in `assets/home-demo.css` and
+`assets/home-demo.js`. The iframe reports its content height to avoid nested scrolling.
 
 Anonymous GitHub may cache an earlier repository commit. A successful GitHub
 Pages update does not itself prove that the anonymous mirror has refreshed.
