@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),viewport=$('viewport');
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.setClearColor('#13212d');renderer.toneMapping=THREE.ACESFilmicToneMapping;viewport.prepend(renderer.domElement);
 const scene=new THREE.Scene();scene.fog=new THREE.Fog('#13212d',22,65);
 const camera=new THREE.PerspectiveCamera(40,1,.03,100);camera.up.set(0,0,1);
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=2;controls.maxDistance=28;
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=false;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=2;controls.maxDistance=28;
 function view(){camera.position.set(-6.5,-8.2,5.4);controls.target.set(1.6,0,.65);controls.update();}view();$('view').onclick=view;
 scene.add(new THREE.HemisphereLight('#ecf4ff','#243341',1.8));const sun=new THREE.DirectionalLight('#fff5de',2.2);sun.position.set(-3,-4,9);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-10,right:10,top:10,bottom:-10,near:.1,far:30});sun.shadow.bias=-.0004;scene.add(sun);scene.add(sun.target);
 const objects=new Map();const matrix=new THREE.Matrix4();
