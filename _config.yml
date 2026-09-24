@@ -8,3 +8,4 @@ baseurl: /athlete.github.io
 # Anonymous GitHub serves this static entry directly; keep the original Jekyll homepage.
 exclude:
   - index.html
+  - rally-src

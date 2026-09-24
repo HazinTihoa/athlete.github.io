@@ -1,0 +1,9 @@
+ATHLETE browser tennis demonstration
+
+MuJoCo 3.10.0 — Google DeepMind, Apache License 2.0 (licenses/MuJoCo.txt).
+ONNX Runtime 1.24.3 — Microsoft, MIT License (licenses/ONNX-Runtime.txt).
+Three.js 0.180.0 — Three.js authors, MIT License (licenses/Three.js.txt).
+Unitree G1 model assets — Unitree Robotics, BSD 3-Clause (licenses/Unitree-G1.txt).
+
+The browser demonstration uses a trained 29-joint tennis policy and bundled
+robot/racket/court assets. Ball speed is capped at 8 m/s for interaction.
