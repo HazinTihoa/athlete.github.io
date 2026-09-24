@@ -1,12 +1,15 @@
 # ATHLETE Project Page
 
-Project website for ATHLETE, built with the standard GitHub Pages Cayman theme.
+Project website for ATHLETE, with a shared static/Jekyll research layout and an interactive browser demo.
 
 Website: https://hazintihoa.github.io/athlete.github.io/
 
 ## Editing
 
-- Edit `index.md` to update the project description and links.
+- Edit `_includes/project-home.html` for the shared project content and `_layouts/project.html` for the page shell.
+- Edit `assets/project.css` for the research page styling.
+- Run `python3 scripts/build-homepage.py` after edits to regenerate the anonymous static `index.html`.
+- `index.md` uses the shared layout and include on GitHub Pages.
 - Edit `_config.yml` to change the title, description, and theme settings.
 - Add images, videos, and other public project assets as needed.
 
@@ -64,3 +67,24 @@ Anonymous GitHub may cache an earlier repository commit. A successful GitHub
 Pages update does not itself prove that the anonymous mirror has refreshed.
 
 Third-party licenses are included in `rally/licenses/`.
+
+## Research content and video placeholders
+
+The title, verbatim English abstract, source-skill counts, method descriptions,
+and results are taken from the canonical ATHLETE manuscript `root.tex` and its
+`tables/real_world_results.tex` and `tables/simulation_results.tex` (local snapshot
+September 17, 2026). Figure files are copied unchanged from that manuscript.
+Reported paper results are distinguished from the interactive browser checkpoint.
+No cross-method ranking or new experimental claim is introduced.
+
+The BOLT reference page informed the section ordering (overview, demonstrations,
+method, results); ATHLETE text and figures come from its own manuscript.
+
+Four future video positions use static paper figures and explicitly say
+“VIDEO COMING SOON / 图片占位”. They contain no fake playback controls.
+`assets/project/video-slots.json` maps slot IDs to posters. When videos arrive,
+replace the corresponding `data-video-slot` block with an HTML video player
+using `controls`, `playsinline`, `preload="none"`, and the existing poster.
+Use relative paths so the anonymous page does not send visitors to a named host.
+Regenerate `index.html` after changing the shared content. Do not publish a paper
+PDF or source-repository link until its destination is supplied.

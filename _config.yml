@@ -9,3 +9,4 @@ baseurl: /athlete.github.io
 exclude:
   - index.html
   - rally-src
+  - scripts
