@@ -6,7 +6,7 @@ Website: https://hazintihoa.github.io/athlete.github.io/
 
 ## Editing
 
-- Edit `_includes/project-home.html` for the shared project content and `_layouts/project.html` for the page shell.
+- Edit `_includes/project-home.html` for the shared project content, `_includes/project-hero.html` for the full-viewport hero and `_layouts/project.html` for the page shell.
 - Edit `assets/project.css` for the research page styling.
 - Run `python3 scripts/build-homepage.py` after edits to regenerate the anonymous static `index.html`.
 - `index.md` uses the shared layout and include on GitHub Pages.
@@ -80,7 +80,7 @@ No cross-method ranking or new experimental claim is introduced.
 The BOLT reference page informed the section ordering (overview, demonstrations,
 method, results); ATHLETE text and figures come from its own manuscript.
 
-Four future video positions use static paper figures and explicitly say
+Five future video positions use static paper figures and explicitly say
 “VIDEO COMING SOON / 图片占位”. They contain no fake playback controls.
 `assets/project/video-slots.json` maps slot IDs to posters. When videos arrive,
 replace the corresponding `data-video-slot` block with an HTML video player
@@ -88,3 +88,14 @@ using `controls`, `playsinline`, `preload="none"`, and the existing poster.
 Use relative paths so the anonymous page does not send visitors to a named host.
 Regenerate `index.html` after changing the shared content. Do not publish a paper
 PDF or source-repository link until its destination is supplied.
+
+### Hero background video
+
+The first screen overlays the project title and navigation on a full-viewport
+poster. Until a source is supplied, the empty video stays hidden and no playback
+button is shown. To connect the real teaser, set `data-video-src` in
+`_includes/project-hero.html` to a relative media path and update the slot manifest.
+`assets/hero.js` provides muted looping playback, a pause/play button, poster
+fallback, and pause behavior while the hero is offscreen or the tab is hidden.
+Reduced-motion preferences keep playback opt-in. Run the homepage build script
+to update the anonymous entry after editing the hero include.

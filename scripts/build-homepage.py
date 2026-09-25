@@ -2,6 +2,7 @@
 from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 layout = (root / "_layouts/project.html").read_text()
+layout = layout.replace("{% include project-hero.html %}", (root / "_includes/project-hero.html").read_text())
 content = (root / "_includes/project-home.html").read_text()
 assert layout.count("{{ content }}") == 1
 (root / "index.html").write_text(layout.replace("{{ content }}", content))

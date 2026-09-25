@@ -1,6 +1,27 @@
 {
-  "overview": {"poster": "real-world-overview.png", "video": null, "description": "Project overview / teaser"},
-  "forehand-backhand": {"poster": "striking.png", "video": null, "description": "Real-robot forehand and backhand returns"},
-  "human-robot-rallies": {"poster": "real-world-overview.png", "video": null, "description": "Multi-shot human–robot rallies"},
-  "trajectory-guided-motion-matching": {"poster": "motion-matching.png", "video": null, "description": "TGMM reference-generation visualization"}
+  "hero-background": {
+    "poster": "real-world-overview.png",
+    "video": null,
+    "description": "Full-viewport muted looping background teaser"
+  },
+  "overview": {
+    "poster": "real-world-overview.png",
+    "video": null,
+    "description": "Project overview / teaser"
+  },
+  "forehand-backhand": {
+    "poster": "striking.png",
+    "video": null,
+    "description": "Real-robot forehand and backhand returns"
+  },
+  "human-robot-rallies": {
+    "poster": "real-world-overview.png",
+    "video": null,
+    "description": "Multi-shot human–robot rallies"
+  },
+  "trajectory-guided-motion-matching": {
+    "poster": "motion-matching.png",
+    "video": null,
+    "description": "TGMM reference-generation visualization"
+  }
 }
