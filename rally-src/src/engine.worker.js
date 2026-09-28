@@ -4,7 +4,7 @@ import * as ort from 'onnxruntime-web/wasm';
 import {Observations} from './observations.js';
 import {BallPerturbation} from './ball-perturbation.js';
 import {MAX_BALL_SPEED, limitBallSpeed} from './ball-speed.js';
-let mj,m,d,c,obs,session,drag,last=new Float32Array(29),paused=true,flying=false,fallen=false;
+let mj,m,d,c,obs,session,drag,last=new Float32Array(29),paused=true,flying=false,fallen=false,predictionActive=false;
 let pending=null,age=0,hold=[6,-.65,1],warmup=0,steps=0,shot=null,auto=false,pushUntil=0,launchVelocity=[-3.5,0,4.5],interactiveTrack=false,serveSettings={y:-.65,speed:3.5,pitch:48,yaw:0};
 const send=(type,fields={})=>postMessage({type,...fields});
 const commands=[];
@@ -51,7 +51,7 @@ async function parity(base) {
 }
 function reset(){
   mj.mj_resetData(m,d);d.qpos.set(c.default_base,0);c.qadr.forEach((a,i)=>d.qpos[a]=c.initial_joints[i]);
-  interactiveTrack=false;drag.stop();last.fill(0);obs.reset();flying=false;fallen=false;warmup=0;steps=0;pending=null;shot=null;pushUntil=0;
+  interactiveTrack=false;drag.stop();last.fill(0);obs.reset();flying=false;fallen=false;predictionActive=false;warmup=0;steps=0;pending=null;shot=null;pushUntil=0;
   hold=[6,-.65,1];holdBall();mj.mj_forward(m,d);paused=true;frame(0);sendServePreview();
 }
 function holdBall(){d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.fill(0,c.ball_vadr,c.ball_vadr+6);}
@@ -90,17 +90,17 @@ function launch(cmd={}) {
   interactiveTrack=false;drag.stop();
   const y=Number(cmd.y??-.65);
   hold=[6,y,1];launchVelocity=serveVelocity(cmd);d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);limitBallSpeed(d.qvel,c.ball_vadr);
-  flying=true;pending=null;obs.clearBall();paused=false;shot={hit:false,net:false,landing:null,start:d.time};mj.mj_forward(m,d);
+  flying=true;predictionActive=true;pending=null;obs.clearBall();paused=false;shot={hit:false,net:false,landing:null,start:d.time};mj.mj_forward(m,d);
 }
 function resetInteractiveBall(){
-  interactiveTrack=true;drag.stop();auto=false;pending=null;age=0;shot=null;flying=false;
+  interactiveTrack=true;drag.stop();auto=false;pending=null;age=0;shot=null;flying=false;predictionActive=false;
   hold=[...(c.interactive_ball_position??[.31931576,.9375947,1.08916278])];
   holdBall();obs.clearBall();mj.mj_forward(m,d);if(!fallen)paused=false;
 }
 function startDrag(position){
   if(fallen||!drag.setTarget(position))return;
   interactiveTrack=true;auto=false;paused=false;
-  if(!flying){flying=true;pending=null;shot={hit:false,net:false,landing:null,start:d.time};}
+  if(!flying){flying=true;predictionActive=true;pending=null;shot={hit:false,net:false,landing:null,start:d.time};}
 }
 function aero(){
   const a=c.aero,v=Array.from(d.qvel.slice(c.ball_vadr,c.ball_vadr+3)).map((x,i)=>x-a.wind_w[i]),w=d.qvel.slice(c.ball_vadr+3,c.ball_vadr+6),r=c.radius,rho=a.air_density_kg_m3,mu=a.dynamic_viscosity_pa_s;
@@ -116,8 +116,9 @@ function rebound(){
     if(shot?.hit&&!shot.landing)shot.landing=Array.from(d.qpos.slice(c.ball_qadr,c.ball_qadr+2));
     d.qpos[c.ball_qadr+2]=c.radius+.0001;
     for(let i=0;i<2;i++)d.qvel[c.ball_vadr+i]=pending[i]*c.physics.ground_tangent_speed_retention;
-    d.qvel[c.ball_vadr+2]=-pending[2]*c.physics.court_restitution;pending=null;mj.mj_forward(m,d);
+    d.qvel[c.ball_vadr+2]=-pending[2]*c.physics.court_restitution;pending=null;mj.mj_forward(m,d);return true;
   }else if(age>20)pending=null;
+  return false;
 }
 let ballGeom,racketGeoms;
 function contacts(){
@@ -170,14 +171,14 @@ async function tick(){
         if(warming){d.qpos.set(c.default_base,0);d.qvel.fill(0,0,6);}
         if(flying&&(!warming||interactiveTrack)){if(drag.active)drag.apply();aero();}else holdBall();
         const oldX=d.qpos[c.ball_qadr];mj.mj_step(m,d);limitBallSpeed(d.qvel,c.ball_vadr);
-        if(flying&&(!warming||interactiveTrack)){contacts();rebound();limitBallSpeed(d.qvel,c.ball_vadr);if(shot?.hit&&!shot.net&&oldX<c.net_x&&d.qpos[c.ball_qadr]>=c.net_x&&d.qpos[c.ball_qadr+2]>.914&&Math.abs(d.qpos[c.ball_qadr+1])<5)shot.net=true;}
+        if(flying&&(!warming||interactiveTrack)){contacts();const firstBounce=rebound();if(shot?.hit||firstBounce)predictionActive=false;limitBallSpeed(d.qvel,c.ball_vadr);if(shot?.hit&&!shot.net&&oldX<c.net_x&&d.qpos[c.ball_qadr]>=c.net_x&&d.qpos[c.ball_qadr+2]>.914&&Math.abs(d.qpos[c.ball_qadr+1])<5)shot.net=true;}
         if(warming){d.qpos.set(c.default_base,0);d.qvel.fill(0,0,6);if(!flying||!interactiveTrack)holdBall();}
       }
       if(warming){warmup+=c.control_dt;if(warmup>=.5&&flying&&!interactiveTrack){d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);limitBallSpeed(d.qvel,c.ball_vadr);obs.clearBall();}}
       mj.mj_forward(m,d);steps++;
       fallen=d.qpos[2]<.35||d.xmat[c.pelvis_body*9+8]<Math.cos(70*Math.PI/180);
       if(!Array.from(d.qpos).every(Number.isFinite))throw Error('Nonfinite simulation state');
-      if(flying&&steps%6===0)send('preview',predictFlight(Array.from(d.qpos.slice(c.ball_qadr,c.ball_qadr+3)),Array.from(d.qvel.slice(c.ball_vadr,c.ball_vadr+3))));
+      if(predictionActive&&steps%6===0)send('preview',predictFlight(Array.from(d.qpos.slice(c.ball_qadr,c.ball_qadr+3)),Array.from(d.qvel.slice(c.ball_vadr,c.ball_vadr+3))));
       if(flying&&auto&&d.time-(shot?.start??0)>7)launch(serveSettings);
     }
     frame(performance.now()-start);
