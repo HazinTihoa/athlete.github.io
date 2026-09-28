@@ -35,3 +35,34 @@
 .trajectory-key i,.trajectory-key b,.trajectory-key em{display:inline-block;width:15px;height:0;border-top:2px dashed #5ce8ed}
 .trajectory-key b{border-color:#ffbc62;border-style:solid}.trajectory-key em{border-color:#efff38;border-style:solid}
 @media(max-width:650px){.trajectory-key{font-size:8px}.scene-keys{gap:3px}}
+
+/* Compact English demo controls and a high-contrast drag/trajectory legend. */
+header{height:66px}
+main{padding-top:30px}
+.intro{margin-bottom:20px}
+.intro h1{font-size:clamp(25px,3vw,40px);margin-bottom:6px}
+.intro .eyebrow{margin-bottom:8px}
+.subtitle{font-size:13px}
+.lab{grid-template-columns:minmax(0,1fr) 275px}
+#viewport{min-height:560px}
+.scene-top{left:16px;right:16px;top:16px}
+.scene-bottom{left:16px;right:16px;bottom:16px;gap:12px}
+.scene-keys{gap:8px;max-width:calc(100% - 90px);font-size:10px}
+.trajectory-key{gap:9px;font-size:10px;text-shadow:0 1px 3px #14212b}
+.trajectory-key i,.trajectory-key b,.trajectory-key em{width:18px}
+.trajectory-key i{border-color:#5ce8ed}
+.trajectory-key b{border-color:#efff38}
+.trajectory-key em{border-color:#f3c86a}
+.ball-speed{font-size:10px;letter-spacing:.8px}
+.ball-speed strong{font-size:17px}
+aside{padding:24px 20px}
+aside h2{margin-bottom:22px}
+.serve-preview{margin:3px 0 14px}
+.drag-help{margin:13px 0 18px;color:#768477;font-size:10px;line-height:1.75}
+.drag-help .cyan{color:#168b94;font-weight:700}
+.drag-help .yellow{color:#879500;font-weight:700}
+.drag-help .gold{color:#b37b21;font-weight:700}
+.actions{margin-top:4px}
+.actions button{padding:10px}
+@media(max-width:900px){.lab{grid-template-columns:minmax(0,1fr) 250px}#viewport{min-height:520px}}
+@media(max-width:650px){header{height:58px}main{padding:20px 3%}.lab{grid-template-columns:1fr}#viewport{min-height:420px}.scene-keys{font-size:9px}.trajectory-key{font-size:8px;gap:6px}.scene-bottom{left:10px;right:10px;bottom:10px}.actions button{padding:9px 6px}}

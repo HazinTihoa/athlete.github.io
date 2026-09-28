@@ -1,30 +1,44 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATHLETE · Rally Lab</title><link rel="icon" href="data:,"><script>
-if (new URLSearchParams(location.search).has('embed')) {
-  document.documentElement.classList.add('embedded');
-  window.addEventListener('DOMContentLoaded', () => {
-    const main = document.querySelector('main');
-    new ResizeObserver(() => parent.postMessage({type:'athlete-rally-height',height:main.getBoundingClientRect().height + 2}, '*')).observe(main);
-  });
-}
-</script></head><body>
-<header><a class="brand" href="./">ATHLETE<span>RALLY LAB</span></a><div class="local"><i></i> ALL IN YOUR BROWSER</div><a href="#about" class="about-link">关于这个实验 ↗</a></header>
-<main><section class="intro"><div><p class="eyebrow">HUMANOID TENNIS / INTERACTIVE DEMO</p><h1>你来发球。<em>让机器人回击。</em></h1><p class="subtitle">调整来球，观察学到的运动策略如何接球、挥拍与保持平衡。</p></div><div class="model-label">UNITREE G1 <span>×</span> GPU3-2<br><small>POLICY 45000 · LOCAL PREVIEW</small></div></section>
-<section class="interaction-guide" aria-labelledby="interaction-title">
-  <div class="interaction-lead"><span class="guide-ball" aria-hidden="true"></span><div><h2 id="interaction-title">拖动滑块设置发球位置，点击球场选择落点</h2><p>系统根据落点自动反算球速与发球角度，轨迹从当前球的位置开始；也可以拖动黄色球进行自由交互。</p></div><span class="guide-label">交互指南</span></div>
-  <ul class="interaction-shortcuts">
-    <li><span><kbd>Ctrl</kbd> + 拖动空白</span><span>不用点中球，也能牵引</span></li>
-    <li><span><kbd>Shift</kbd> + 拖球</span><span>沿水平面移动球</span></li>
-    <li><span>按 <kbd>B</kbd></span><span>把球放回手边，再试一次</span></li>
-  </ul>
-</section>
-<div class="lab"><section id="viewport" aria-label="网球机器人交互仿真"><div class="scene-top"><span class="badge" id="state">正在加载</span><span class="ball-speed" title="当前物理球速">当前球速 <strong id="ball-speed">0.00</strong> m/s</span></div><div id="loading"><span class="spinner"></span><strong id="load-text">准备球场…</strong><p>首次加载需要下载模型与物理引擎，请稍候。</p></div><div class="scene-bottom"><div class="scene-keys"><span>单击机器人半场选择落点 · 拖空白旋转 · 滚轮缩放</span><span class="trajectory-key"><i></i>预测轨迹　<b></b>选定落点　<em></em>实际轨迹</span></div><button id="view">重置视角 ↗</button></div></section>
-<aside><div class="panel-heading"><span class="eyebrow">01 / SERVE</span><h2>选择来球落点</h2></div>
-<p class="target-hint">拖动滑块移动初始球位；再单击机器人半场选择落点。系统自动计算对应球速与发球角度，不设手动球速上限。</p>
-<label>发球位置 · 前后 X <output id="launch-x-value">6.00 m</output><input id="launch-x" type="range" min="5.5" max="6.5" step=".05" value="6"></label>
-<label>发球位置 · 左右 Y <output id="launch-y-value">0.00 m</output><input id="launch-y" type="range" min="-1.5" max="1.5" step=".05" value="0"></label>
-<div class="serve-preview" id="serve-preview" aria-live="polite">目标落点 <strong>计算中…</strong></div>
-<button id="serve" class="primary" disabled>发向选定落点 <span>SPACE ↗</span></button><label class="toggle"><input id="auto" type="checkbox"> 连续发球 <small>每 7 秒一次</small></label>
-<div class="divider"></div><div class="panel-heading"><span class="eyebrow">02 / EXPLORE</span><h2>观察策略的反应</h2></div><div class="actions"><button id="pause" disabled>暂停 / 继续</button><button id="reset" disabled>重置机器人</button></div><button id="ball-reset" disabled>球回到手边 · B</button><button id="push" disabled>轻推机器人 ↗</button>
-</aside></div>
-<div class="readouts"><div><small>当前回合</small><strong id="shot">等待发球</strong></div><div><small>策略计算 + 物理步进</small><strong id="latency">— <span>ms / 帧</span></strong></div><div><small>仿真时间</small><strong id="simtime">0.00 <span>s</span></strong></div><div><small>运行方式</small><strong>本地浏览器 <span>无需 GPU 服务器</span></strong></div></div>
-<footer id="about"><p><strong>一次真实的策略推理。</strong> 机器人动作来自训练好的网球策略；球、球拍和机器人在浏览器内实时进行物理仿真。橙色圆环表示手动选择的落点，青色虚线从当前球位置实时预测首段飞行轨迹；球速和发球角度由落点自动反算。</p><p>本地原型 · 首段轨迹实时预测 · 未主动采样失败球<br>MuJoCo + ONNX Runtime Web · 桌面 Chrome / Edge 优先</p></footer></main><script type="module" src="/src/main.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ATHLETE · Rally Lab</title>
+  <link rel="icon" href="data:,">
+  <script>
+    if (new URLSearchParams(location.search).has('embed')) {
+      document.documentElement.classList.add('embedded');
+      window.addEventListener('DOMContentLoaded', () => {
+        const main = document.querySelector('main');
+        new ResizeObserver(() => parent.postMessage({type:'athlete-rally-height',height:main.getBoundingClientRect().height + 2}, '*')).observe(main);
+      });
+    }
+  </script>
+</head>
+<body>
+<header><a class="brand" href="./">ATHLETE<span>RALLY LAB</span></a><div class="local"><i></i> IN-BROWSER DEMO</div></header>
+<main>
+  <section class="intro">
+    <div><p class="eyebrow">HUMANOID TENNIS</p><h1>Can G1 return your shot?</h1><p class="subtitle">Set a landing target, then watch the robot react.</p></div>
+    <div class="model-label">UNITREE G1<br><small>POLICY 45000</small></div>
+  </section>
+  <div class="lab">
+    <section id="viewport" aria-label="Interactive humanoid tennis simulation">
+      <div class="scene-top"><span class="badge" id="state">Loading</span><span class="ball-speed">SPEED <strong id="ball-speed">0.00</strong> m/s</span></div>
+      <div id="loading"><span class="spinner"></span><strong id="load-text">Loading court…</strong><p>First load may take a moment while the model and physics engine download.</p></div>
+      <div class="scene-bottom"><div class="scene-keys"><span>Click robot's side to set target · Drag the ball to apply force · Drag empty space to orbit</span><span class="trajectory-key"><i></i>predicted first flight <b></b>path traveled <em></em>drag tether</span></div><button id="view">Reset view</button></div>
+    </section>
+    <aside>
+      <div class="panel-heading"><span class="eyebrow">SERVE SETUP</span><h2>Choose a landing point</h2></div>
+      <label>Ball start · X <output id="launch-x-value">6.00 m</output><input id="launch-x" type="range" min="5.5" max="6.5" step=".05" value="6"></label>
+      <label>Ball start · Y <output id="launch-y-value">0.00 m</output><input id="launch-y" type="range" min="-1.5" max="1.5" step=".05" value="0"></label>
+      <div class="serve-preview" id="serve-preview" aria-live="polite">Target <strong>Calculating…</strong></div>
+      <button id="serve" class="primary" disabled>Serve to target <span>SPACE ↗</span></button>
+      <p class="drag-help">Drag the ball to interact. <span class="cyan">Dashed cyan</span>: predicted path if released now. <span class="yellow">Yellow</span>: path already traveled. <span class="gold">Gold</span>: cursor tether.</p>
+      <div class="actions"><button id="pause" disabled>Pause</button><button id="reset" disabled>Reset simulation</button></div>
+    </aside>
+  </div>
+</main>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

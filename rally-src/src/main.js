@@ -42,7 +42,7 @@ const worker=packaged?new Worker(URL.createObjectURL(new Blob([packaged.worker],
 const send=(type,more={})=>worker.postMessage({type,...more});
 window.__rally={ready:false,errors:[],parity:null,latest:null,send};
 worker.onerror=e=>error(e.message);
-function error(message){window.__rally.errors.push(message);$('loading').classList.remove('hidden');$('load-text').textContent='加载或运行失败';$('loading').querySelector('p').textContent=message;$('loading').querySelector('.spinner').style.display='none';$('state').textContent='已停止';}
+function error(message){window.__rally.errors.push(message);$('loading').classList.remove('hidden');$('load-text').textContent='Unable to start';$('loading').querySelector('p').textContent=message;$('loading').querySelector('.spinner').style.display='none';$('state').textContent='Error';}
 worker.onmessage=({data:f})=>{
   if(f.type==='status')$('load-text').textContent=f.message;
   if(f.type==='error')error(f.message);
@@ -55,38 +55,37 @@ worker.onmessage=({data:f})=>{
     const [x,y,z]=f.landing,[tx,ty]=f.target??f.landing;previewMarker.position.set(tx,ty,.025);previewDot.position.set(x,y,Math.max(.05,z));previewMarker.material.color.set(canReach?'#ffbc62':'#ff6675');previewMarker.visible=!!f.target||!!f.landed||!!f.net;previewDot.visible=canReach&&!!f.landed;
     const targetCoord=`(${tx.toFixed(1)}, ${ty.toFixed(1)}) m`,landingCoord=`(${x.toFixed(1)}, ${y.toFixed(1)}) m`;
     if(Number.isFinite(f.pitch)){
-      $('serve-preview').innerHTML=f.reachable?`目标落点 <strong>${targetCoord}</strong><span>预测 ${landingCoord} · 球速 ${f.speed.toFixed(1)} m/s · pitch ${f.pitch.toFixed(1)}° · yaw ${f.yaw.toFixed(1)}°</span>`:`目标落点 <strong>${targetCoord}</strong><span>这个发球位置与落点组合暂不可达；请调整球的位置或选择其他落点</span>`;
+    $('serve-preview').innerHTML=f.reachable?`Target <strong>${targetCoord}</strong><span>Required speed ${f.speed.toFixed(1)} m/s · pitch ${f.pitch.toFixed(1)}° · yaw ${f.yaw.toFixed(1)}°</span>`:`Target <strong>${targetCoord}</strong><span>Unreachable from this start point. Adjust the start or choose another target.</span>`;
     }else{
-      $('serve-preview').innerHTML=`实时预测落点 <strong>${landingCoord}</strong><span>${f.net?'轨迹将触网':f.landed?'球已首次落地':'轨迹从当前球位置实时更新'}</span>`;
+      $('serve-preview').innerHTML=`${f.dragging?'Forecast if released now':'Live landing forecast'} <strong>${landingCoord}</strong><span>${f.net?'Flight reaches the net':f.landed?'First bounce':'Updates from the ball position'}</span>`;
     }
     $('serve-preview').classList.toggle('unreachable',!canReach);
     if(Number.isFinite(f.pitch)){currentPreviewReachable=!!f.reachable;$('serve').disabled=!ready||!currentPreviewReachable;}
   }
-  if(f.type==='ready'){ready=true;window.__rally.ready=true;$('loading').classList.add('hidden');$('serve').disabled=!currentPreviewReachable;['pause','reset','push','ball-reset'].forEach(id=>$(id).disabled=false);}
+  if(f.type==='ready'){ready=true;window.__rally.ready=true;$('loading').classList.add('hidden');$('serve').disabled=!currentPreviewReachable;['pause','reset'].forEach(id=>$(id).disabled=false);}
   if(f.type==='frame'){
     latest=f;window.__rally.latest=f;
     $('ball-speed').textContent=Math.hypot(...f.ballVelocity).toFixed(2);
     for(const [id,obj] of objects){const r=f.rotations,p=f.positions,i=id*9;matrix.set(r[i],r[i+1],r[i+2],0,r[i+3],r[i+4],r[i+5],0,r[i+6],r[i+7],r[i+8],0,0,0,0,1);obj.quaternion.setFromRotationMatrix(matrix);obj.position.fromArray(p,id*3);}
     ballHalo.position.fromArray(f.ball);
-    if(f.time<lastTime||!f.flying||f.shot?.start!==window.__rally.shotStart){trail=[];window.__rally.shotStart=f.shot?.start;}
-    if(f.time!==lastTime&&f.flying){trail.push(new THREE.Vector3(...f.ball));if(trail.length>230)trail.shift();trailGeom.setFromPoints(trail);}lastTime=f.time;
-    $('state').textContent=f.fallen?'已倾倒 · 请重置':f.dragging?'鼠标牵引球':f.paused?(f.steps?'已暂停':'准备就绪'):f.time<.5?'站立准备':'策略运行中';
-    $('simtime').innerHTML=`${f.time.toFixed(2)} <span>s</span>`;
-    if(!f.paused)$('latency').innerHTML=`${f.ms.toFixed(1)} <span>ms / 帧</span>`;
-    $('shot').textContent=f.dragging?'拖动施力 · 松手释放':f.shot?.landing?`落点 ${f.shot.landing.map(v=>v.toFixed(1)).join(', ')} m`:f.shot?.net?'回球已过网':f.shot?.hit?'球拍已触球':f.flying?'来球飞行中':'等待发球';
+    if(f.time<lastTime||!f.flying||f.shot?.start!==window.__rally.shotStart){trail=[];trailGeom.setFromPoints([]);trailLine.visible=false;window.__rally.shotStart=f.shot?.start;}
+    if(f.time!==lastTime&&f.flying&&f.predictionActive){trail.push(new THREE.Vector3(...f.ball));if(trail.length>230)trail.shift();trailGeom.setFromPoints(trail);trailLine.visible=trail.length>1;}lastTime=f.time;
+    if(f.flying&&!f.predictionActive&&!f.warming)previewLine.visible=false;
+    $('state').textContent=f.resetReason?`Ball reset · ${f.resetReason==='out'?'out of bounds':'5 s timeout'}`:f.fallen?'Robot fell · reset simulation':f.dragging?'Dragging · forecast if released':f.paused?(f.steps?'Paused':'Ready'):f.time<.5?'Standing up':'Ball in flight';
+    $('pause').textContent=f.paused?'Resume':'Pause';
   }
 };
 send('init',{embedded:packaged?.files,base:new URL('./',location.href).href,verify:new URLSearchParams(location.search).has('verify')});
 function values(){return {x:Number($('launch-x').value),y:Number($('launch-y').value)};}
 function serve(){endBallDrag();if(ready&&currentPreviewReachable)send('launch',values());}
-$('serve').onclick=serve;$('pause').onclick=()=>{endBallDrag();send('pause');};$('reset').onclick=()=>{endBallDrag();send('reset');$('auto').checked=false;send('auto',{value:false});};$('ball-reset').onclick=()=>{endBallDrag();$('auto').checked=false;send('ball-reset');};$('push').onclick=()=>send('push');$('auto').onchange=e=>send('auto',{value:e.target.checked,...values()});
+$('serve').onclick=serve;$('pause').onclick=()=>{endBallDrag();send('pause');};$('reset').onclick=()=>{endBallDrag();send('reset');};
 let positionPreviewTimer=null;
 for(const axis of ['x','y'])$( `launch-${axis}`).oninput=()=>{
   const value=Number($(`launch-${axis}`).value);
   $(`launch-${axis}-value`).textContent=`${value.toFixed(2)} m`;
   clearTimeout(positionPreviewTimer);positionPreviewTimer=setTimeout(()=>send('settings',values()),70);
 };
-window.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','BUTTON'].includes((uiRoot.activeElement??document.activeElement).tagName)){e.preventDefault();serve();}if(e.code==='KeyR')$('reset').click();if(e.code==='KeyB')$('ball-reset').click();});
+window.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','BUTTON'].includes((uiRoot.activeElement??document.activeElement).tagName)){e.preventDefault();serve();}if(e.code==='KeyR')$('reset').click();});
 // Pointer capture keeps the spring attached when the cursor leaves the ball.
 // Empty-space drags still go to OrbitControls; Ctrl uses the preselected ball.
 const pointerRay=new THREE.Raycaster(),dragPlane=new THREE.Plane();
@@ -117,7 +116,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{
   const hit=pointerWorld(e);if(!hit)return;
   dragOffset.copy(ball).sub(hit);dragTarget.copy(ball);dragPointer=e.pointerId;
   controls.enabled=false;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='grabbing';
-  e.preventDefault();e.stopImmediatePropagation();$('auto').checked=false;
+  e.preventDefault();e.stopImmediatePropagation();
   send('drag-start',{position:ball.toArray()});
 },true);
 renderer.domElement.addEventListener('pointermove',e=>{
