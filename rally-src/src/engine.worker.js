@@ -4,8 +4,8 @@ import * as ort from 'onnxruntime-web/wasm';
 import {Observations} from './observations.js';
 import {BallPerturbation} from './ball-perturbation.js';
 import {MAX_BALL_SPEED, limitBallSpeed} from './ball-speed.js';
-let mj,m,d,c,obs,session,drag,last=new Float32Array(29),paused=true,flying=false,fallen=false,predictionActive=false;
-let pending=null,age=0,hold=[6,0,1],warmup=0,steps=0,shot=null,auto=false,pushUntil=0,launchVelocity=[-3.5,0,4.5],interactiveTrack=false,serveSettings={y:0,speed:7,pitch:30,yaw:0},serveTarget=[1.4,-.65];
+let mj,m,d,c,obs,session,drag,last=new Float32Array(29),paused=true,flying=false,fallen=false,predictionActive=false,uncappedServeFlight=false;
+let pending=null,age=0,hold=[6,0,1],warmup=0,steps=0,shot=null,auto=false,pushUntil=0,launchVelocity=[-3.5,0,4.5],interactiveTrack=false,serveSettings={y:0,speed:7,pitch:30,yaw:0},serveTarget=[1.4,-.65],servePosition=[6,0,1],serveReachable=false;
 const send=(type,fields={})=>postMessage({type,...fields});
 const commands=[];
 onmessage=e=>{ if(e.data.type==='init')init(e.data).catch(fail);else commands.push(e.data); };
@@ -51,8 +51,8 @@ async function parity(base) {
 }
 function reset(){
   mj.mj_resetData(m,d);d.qpos.set(c.default_base,0);c.qadr.forEach((a,i)=>d.qpos[a]=c.initial_joints[i]);
-  interactiveTrack=false;drag.stop();last.fill(0);obs.reset();flying=false;fallen=false;predictionActive=false;warmup=0;steps=0;pending=null;shot=null;pushUntil=0;
-  hold=[6,-.65,1];holdBall();mj.mj_forward(m,d);paused=true;frame(0);sendServePreview();
+  interactiveTrack=false;drag.stop();last.fill(0);obs.reset();flying=false;fallen=false;predictionActive=false;uncappedServeFlight=false;warmup=0;steps=0;pending=null;shot=null;pushUntil=0;
+  hold=[...servePosition];holdBall();mj.mj_forward(m,d);paused=true;frame(0);sendServePreview();
 }
 function holdBall(){d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.fill(0,c.ball_vadr,c.ball_vadr+6);}
 function serveVelocity({speed=3.5,pitch=48,yaw=0}={}){
@@ -67,7 +67,6 @@ function predictFlight(position,velocity){
     const drag=.5*a.air_density_kg_m3*c.physics.drag_coefficient*Math.PI*r*r*speed+6*Math.PI*r*a.dynamic_viscosity_pa_s;
     const next=velocity.map((v,i)=>v-drag*relative[i]/mass*dt);
     next[2]-=9.81*dt;
-    const cap=MAX_BALL_SPEED,current=Math.hypot(...next);if(current>cap)for(let i=0;i<3;i++)next[i]*=cap/current;
     const point=old.map((v,i)=>v+next[i]*dt);time+=dt;
     if(!net&&old[0]>c.net_x&&point[0]<=c.net_x){
       const f=(old[0]-c.net_x)/(old[0]-point[0]),cross=old.map((v,i)=>v+(point[i]-v)*f);
@@ -82,40 +81,51 @@ function predictFlight(position,velocity){
   return {points:path,landing:end,time,net,landed};
 }
 function sendServePreview(){
-  const solution=solveLanding(serveTarget,Number(serveSettings.speed??7));
-  if(!solution){send('preview',{points:[],landing:[...serveTarget,c.radius],target:serveTarget,reachable:false,landed:false,net:false,time:0});return;}
-  serveSettings={...serveSettings,y:0,pitch:solution.pitch,yaw:solution.yaw};
-  const flight=predictFlight([6,0,1],serveVelocity(serveSettings));
-  send('preview',{...flight,target:serveTarget,reachable:flight.landed&&!flight.net,error:solution.error,pitch:solution.pitch,yaw:solution.yaw});
+  const solution=solveLanding(servePosition,serveTarget);
+  if(!solution){serveReachable=false;send('preview',{points:[],landing:[...serveTarget,c.radius],target:serveTarget,reachable:false,landed:false,net:false,time:0});return;}
+  serveSettings={...serveSettings,y:servePosition[1],speed:solution.speed,pitch:solution.pitch,yaw:solution.yaw};
+  const flight=predictFlight(servePosition,serveVelocity(serveSettings));
+  serveReachable=flight.landed&&!flight.net;
+  send('preview',{...flight,target:serveTarget,reachable:serveReachable,error:solution.error,pitch:solution.pitch,yaw:solution.yaw,speed:solution.speed});
 }
-function solveLanding(target,speed){
+function solveLanding(position,target){
   if(target[0]>=c.net_x-.05||target[0]<-8.3||Math.abs(target[1])>4.05)return null;
-  const yaw=Math.atan2(target[1],6-target[0])*180/Math.PI;
+  const dx=target[0]-position[0],dy=target[1]-position[1],distance=Math.hypot(dx,dy),yaw=Math.atan2(dy,-dx)*180/Math.PI;
+  if(distance<.5)return null;
   if(Math.abs(yaw)>68)return null;
   let best=null;
-  for(let pitch=4;pitch<=76;pitch+=.5){
-    const flight=predictFlight([6,0,1],serveVelocity({speed,pitch,yaw}));
-    if(!flight.landed||flight.net)continue;
-    const error=Math.hypot(flight.landing[0]-target[0],flight.landing[1]-target[1]);
-    if(!best||error<best.error)best={pitch,yaw,error};
+  const shoot=(speed,pitch)=>predictFlight(position,serveVelocity({speed,pitch,yaw}));
+  for(let pitch=8;pitch<=76;pitch+=1){
+    let low=.5,high=8,upper=shoot(high,pitch),range=Math.hypot(upper.landing[0]-position[0],upper.landing[1]-position[1]);
+    while((upper.net||!upper.landed||range<distance)&&high<64){high*=2;upper=shoot(high,pitch);range=Math.hypot(upper.landing[0]-position[0],upper.landing[1]-position[1]);}
+    if(upper.net||!upper.landed||range<distance)continue;
+    let candidate=null;
+    for(let i=0;i<16;i++){
+      const speed=(low+high)/2,flight=shoot(speed,pitch),landedRange=Math.hypot(flight.landing[0]-position[0],flight.landing[1]-position[1]);
+      if(flight.net||!flight.landed||landedRange<distance){low=speed;continue;}
+      const error=Math.hypot(flight.landing[0]-target[0],flight.landing[1]-target[1]);candidate={speed,pitch,yaw,error};high=speed;
+    }
+    if(candidate&&(!best||candidate.speed<best.speed))best=candidate;
   }
-  return best&&best.error<=.18?best:null;
+  return best&&best.error<=.2?best:null;
 }
 function launch(cmd={}) {
-  if(fallen)return;
+  if(cmd.x!==undefined||cmd.y!==undefined)servePosition=[Number(cmd.x??servePosition[0]),Number(cmd.y??servePosition[1]),1];
+  sendServePreview();
+  if(fallen||!serveReachable)return;
   interactiveTrack=false;drag.stop();
-  hold=[6,0,1];launchVelocity=serveVelocity({...serveSettings,...cmd});d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);limitBallSpeed(d.qvel,c.ball_vadr);
-  flying=true;predictionActive=true;pending=null;obs.clearBall();paused=false;shot={hit:false,net:false,landing:null,start:d.time};mj.mj_forward(m,d);
+  hold=[...servePosition];launchVelocity=serveVelocity(serveSettings);d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);
+  flying=true;predictionActive=warmup>=.5;uncappedServeFlight=true;pending=null;obs.clearBall();paused=false;shot={hit:false,net:false,landing:null,start:d.time};mj.mj_forward(m,d);
 }
 function resetInteractiveBall(){
-  interactiveTrack=true;drag.stop();auto=false;pending=null;age=0;shot=null;flying=false;predictionActive=false;
+  interactiveTrack=true;drag.stop();auto=false;pending=null;age=0;shot=null;flying=false;predictionActive=false;uncappedServeFlight=false;
   hold=[...(c.interactive_ball_position??[.31931576,.9375947,1.08916278])];
   holdBall();obs.clearBall();mj.mj_forward(m,d);if(!fallen)paused=false;
 }
 function startDrag(position){
   if(fallen||!drag.setTarget(position))return;
   interactiveTrack=true;auto=false;paused=false;
-  if(!flying){flying=true;predictionActive=true;pending=null;shot={hit:false,net:false,landing:null,start:d.time};}
+  if(!flying){flying=true;predictionActive=true;uncappedServeFlight=false;pending=null;shot={hit:false,net:false,landing:null,start:d.time};}
 }
 function aero(){
   const a=c.aero,v=Array.from(d.qvel.slice(c.ball_vadr,c.ball_vadr+3)).map((x,i)=>x-a.wind_w[i]),w=d.qvel.slice(c.ball_vadr+3,c.ball_vadr+6),r=c.radius,rho=a.air_density_kg_m3,mu=a.dynamic_viscosity_pa_s;
@@ -170,10 +180,17 @@ async function tick(){
       if(cmd.type==='ball-reset')resetInteractiveBall();
       if(cmd.type==='drag-start')startDrag(cmd.position);
       if(cmd.type==='drag-target'&&drag.active)drag.setTarget(cmd.position);
-      if(cmd.type==='drag-end')drag.stop();if(cmd.type==='launch'){serveSettings={...serveSettings,...cmd};launch(serveSettings);}
-      if(cmd.type==='settings'){serveSettings={...serveSettings,...cmd};predictionActive=false;sendServePreview();}
-      if(cmd.type==='target'){serveTarget=[Number(cmd.x),Number(cmd.y)];predictionActive=false;sendServePreview();}
-      if(cmd.type==='auto'){auto=cmd.value;serveSettings={...serveSettings,...cmd};sendServePreview();if(auto&&!flying)launch(serveSettings);}
+      if(cmd.type==='drag-end')drag.stop();if(cmd.type==='launch')launch(cmd);
+      if(cmd.type==='settings'){servePosition=[Number(cmd.x??servePosition[0]),Number(cmd.y??servePosition[1]),1];predictionActive=false;if(!flying){hold=[...servePosition];holdBall();mj.mj_forward(m,d);}sendServePreview();}
+      if(cmd.type==='target'){
+        serveTarget=[Number(cmd.x),Number(cmd.y)];
+        if(flying&&predictionActive){
+          const solution=solveLanding(servePosition,serveTarget);
+          if(solution)serveSettings={...serveSettings,y:servePosition[1],speed:solution.speed,pitch:solution.pitch,yaw:solution.yaw};
+          send('preview',{...predictFlight(Array.from(d.qpos.slice(c.ball_qadr,c.ball_qadr+3)),Array.from(d.qvel.slice(c.ball_vadr,c.ball_vadr+3))),target:serveTarget});
+        }else{predictionActive=false;sendServePreview();}
+      }
+      if(cmd.type==='auto'){auto=cmd.value;servePosition=[Number(cmd.x??servePosition[0]),Number(cmd.y??servePosition[1]),1];sendServePreview();if(auto&&!flying)launch();}
       if(cmd.type==='push')pushUntil=d.time+.15;
     }
     if(!paused&&!fallen){
@@ -186,15 +203,15 @@ async function tick(){
         for(let j=0;j<29;j++){const target=c.default_joints[j]+(warming?0:c.action_scale[j]*last[j]);d.ctrl[c.actuators[j]]=c.kp[j]*(target-d.qpos[c.qadr[j]])-c.kd[j]*d.qvel[c.vadr[j]];}
         if(warming){d.qpos.set(c.default_base,0);d.qvel.fill(0,0,6);}
         if(flying&&(!warming||interactiveTrack)){if(drag.active)drag.apply();aero();}else holdBall();
-        const oldX=d.qpos[c.ball_qadr];mj.mj_step(m,d);limitBallSpeed(d.qvel,c.ball_vadr);
-        if(flying&&(!warming||interactiveTrack)){contacts();const firstBounce=rebound();if(shot?.hit||firstBounce)predictionActive=false;limitBallSpeed(d.qvel,c.ball_vadr);if(shot?.hit&&!shot.net&&oldX<c.net_x&&d.qpos[c.ball_qadr]>=c.net_x&&d.qpos[c.ball_qadr+2]>.914&&Math.abs(d.qpos[c.ball_qadr+1])<5)shot.net=true;}
+        const oldX=d.qpos[c.ball_qadr];mj.mj_step(m,d);if(!uncappedServeFlight)limitBallSpeed(d.qvel,c.ball_vadr);
+        if(flying&&(!warming||interactiveTrack)){contacts();const firstBounce=rebound();if(shot?.hit||firstBounce){predictionActive=false;uncappedServeFlight=false;}if(!uncappedServeFlight)limitBallSpeed(d.qvel,c.ball_vadr);if(shot?.hit&&!shot.net&&oldX<c.net_x&&d.qpos[c.ball_qadr]>=c.net_x&&d.qpos[c.ball_qadr+2]>.914&&Math.abs(d.qpos[c.ball_qadr+1])<5)shot.net=true;}
         if(warming){d.qpos.set(c.default_base,0);d.qvel.fill(0,0,6);if(!flying||!interactiveTrack)holdBall();}
       }
-      if(warming){warmup+=c.control_dt;if(warmup>=.5&&flying&&!interactiveTrack){d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);limitBallSpeed(d.qvel,c.ball_vadr);obs.clearBall();}}
+      if(warming){warmup+=c.control_dt;if(warmup>=.5&&flying&&!interactiveTrack){d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);if(!uncappedServeFlight)limitBallSpeed(d.qvel,c.ball_vadr);predictionActive=true;obs.clearBall();}}
       mj.mj_forward(m,d);steps++;
       fallen=d.qpos[2]<.35||d.xmat[c.pelvis_body*9+8]<Math.cos(70*Math.PI/180);
       if(!Array.from(d.qpos).every(Number.isFinite))throw Error('Nonfinite simulation state');
-      if(predictionActive&&steps%6===0)send('preview',predictFlight(Array.from(d.qpos.slice(c.ball_qadr,c.ball_qadr+3)),Array.from(d.qvel.slice(c.ball_vadr,c.ball_vadr+3))));
+      if(predictionActive&&steps%6===0)send('preview',{...predictFlight(Array.from(d.qpos.slice(c.ball_qadr,c.ball_qadr+3)),Array.from(d.qvel.slice(c.ball_vadr,c.ball_vadr+3))),target:serveTarget});
       if(flying&&auto&&d.time-(shot?.start??0)>7)launch(serveSettings);
     }
     frame(performance.now()-start);

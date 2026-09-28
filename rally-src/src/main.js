@@ -50,11 +50,17 @@ worker.onmessage=({data:f})=>{
   if(f.type==='scene')addGeoms(f.geoms,f.target);
   if(f.type==='preview'){
     const points=[];for(let i=0;i<f.points.length;i+=3)points.push(new THREE.Vector3(f.points[i],f.points[i+1],f.points[i+2]));
-    previewGeom.setFromPoints(points);previewLine.computeLineDistances();previewLine.visible=points.length>1&&!!f.reachable;
-    const [x,y,z]=f.landing,[tx,ty]=f.target??f.landing;previewMarker.position.set(tx,ty,.025);previewDot.position.set(x,y,Math.max(.05,z));previewMarker.material.color.set(f.reachable?'#ffbc62':'#ff6675');previewMarker.visible=!!f.target||!!f.landed||!!f.net;previewDot.visible=!!f.reachable&&!!f.landed;
+    const canReach=f.reachable!==false;
+    previewGeom.setFromPoints(points);previewLine.computeLineDistances();previewLine.visible=points.length>1&&canReach;
+    const [x,y,z]=f.landing,[tx,ty]=f.target??f.landing;previewMarker.position.set(tx,ty,.025);previewDot.position.set(x,y,Math.max(.05,z));previewMarker.material.color.set(canReach?'#ffbc62':'#ff6675');previewMarker.visible=!!f.target||!!f.landed||!!f.net;previewDot.visible=canReach&&!!f.landed;
     const targetCoord=`(${tx.toFixed(1)}, ${ty.toFixed(1)}) m`,landingCoord=`(${x.toFixed(1)}, ${y.toFixed(1)}) m`;
-    $('serve-preview').innerHTML=f.reachable?`目标落点 <strong>${targetCoord}</strong><span>预测 ${landingCoord} · pitch ${f.pitch.toFixed(1)}° · yaw ${f.yaw.toFixed(1)}°</span>`:`目标落点 <strong>${targetCoord}</strong><span>当前速度下不可达；提高速度或选择更近的位置</span>`;
-    $('serve-preview').classList.toggle('unreachable',!f.reachable);currentPreviewReachable=!!f.reachable;$('serve').disabled=!ready||!currentPreviewReachable;
+    if(Number.isFinite(f.pitch)){
+      $('serve-preview').innerHTML=f.reachable?`目标落点 <strong>${targetCoord}</strong><span>预测 ${landingCoord} · 球速 ${f.speed.toFixed(1)} m/s · pitch ${f.pitch.toFixed(1)}° · yaw ${f.yaw.toFixed(1)}°</span>`:`目标落点 <strong>${targetCoord}</strong><span>这个发球位置与落点组合暂不可达；请调整球的位置或选择其他落点</span>`;
+    }else{
+      $('serve-preview').innerHTML=`实时预测落点 <strong>${landingCoord}</strong><span>${f.net?'轨迹将触网':f.landed?'球已首次落地':'轨迹从当前球位置实时更新'}</span>`;
+    }
+    $('serve-preview').classList.toggle('unreachable',!canReach);
+    if(Number.isFinite(f.pitch)){currentPreviewReachable=!!f.reachable;$('serve').disabled=!ready||!currentPreviewReachable;}
   }
   if(f.type==='ready'){ready=true;window.__rally.ready=true;$('loading').classList.add('hidden');$('serve').disabled=!currentPreviewReachable;['pause','reset','push','ball-reset'].forEach(id=>$(id).disabled=false);}
   if(f.type==='frame'){
@@ -71,11 +77,15 @@ worker.onmessage=({data:f})=>{
   }
 };
 send('init',{embedded:packaged?.files,base:new URL('./',location.href).href,verify:new URLSearchParams(location.search).has('verify')});
-function values(){return {speed:Number($('speed').value)};}
-function serve(){endBallDrag();if(ready&&currentPreviewReachable){send('settings',values());send('launch',values());}}
+function values(){return {x:Number($('launch-x').value),y:Number($('launch-y').value)};}
+function serve(){endBallDrag();if(ready&&currentPreviewReachable)send('launch',values());}
 $('serve').onclick=serve;$('pause').onclick=()=>{endBallDrag();send('pause');};$('reset').onclick=()=>{endBallDrag();send('reset');$('auto').checked=false;send('auto',{value:false});};$('ball-reset').onclick=()=>{endBallDrag();$('auto').checked=false;send('ball-reset');};$('push').onclick=()=>send('push');$('auto').onchange=e=>send('auto',{value:e.target.checked,...values()});
-let speedPreviewTimer=null;
-$('speed').oninput=()=>{$('speed-value').textContent=`${Number($('speed').value).toFixed(1)} m/s`;clearTimeout(speedPreviewTimer);speedPreviewTimer=setTimeout(()=>send('settings',values()),90);};
+let positionPreviewTimer=null;
+for(const axis of ['x','y'])$( `launch-${axis}`).oninput=()=>{
+  const value=Number($(`launch-${axis}`).value);
+  $(`launch-${axis}-value`).textContent=`${value.toFixed(2)} m`;
+  clearTimeout(positionPreviewTimer);positionPreviewTimer=setTimeout(()=>send('settings',values()),70);
+};
 window.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','BUTTON'].includes((uiRoot.activeElement??document.activeElement).tagName)){e.preventDefault();serve();}if(e.code==='KeyR')$('reset').click();if(e.code==='KeyB')$('ball-reset').click();});
 // Pointer capture keeps the spring attached when the cursor leaves the ball.
 // Empty-space drags still go to OrbitControls; Ctrl uses the preselected ball.
