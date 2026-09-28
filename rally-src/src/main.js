@@ -10,7 +10,7 @@ const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamp
 function view(){camera.position.set(-6.5,-8.2,5.4);controls.target.set(1.6,0,.65);controls.update();}view();$('view').onclick=view;
 scene.add(new THREE.HemisphereLight('#ecf4ff','#243341',1.8));const sun=new THREE.DirectionalLight('#fff5de',2.2);sun.position.set(-3,-4,9);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-10,right:10,top:10,bottom:-10,near:.1,far:30});sun.shadow.bias=-.0004;scene.add(sun);scene.add(sun.target);
 const objects=new Map();const matrix=new THREE.Matrix4();
-let ready=false,latest=null,trail=[],lastTime=-1;
+let ready=false,currentPreviewReachable=false,latest=null,trail=[],lastTime=-1;
 const trailGeom=new THREE.BufferGeometry();const trailLine=new THREE.Line(trailGeom,new THREE.LineBasicMaterial({color:'#efff38',transparent:true,opacity:.85,toneMapped:false}));scene.add(trailLine);
 const previewGeom=new THREE.BufferGeometry();const previewLine=new THREE.Line(previewGeom,new THREE.LineDashedMaterial({color:'#5ce8ed',dashSize:.18,gapSize:.12,transparent:true,opacity:.9,toneMapped:false}));previewLine.visible=false;scene.add(previewLine);
 const previewMarker=new THREE.Mesh(new THREE.RingGeometry(.24,.31,48),new THREE.MeshBasicMaterial({color:'#ffbc62',transparent:true,opacity:.95,side:THREE.DoubleSide,depthTest:false,toneMapped:false}));previewMarker.rotation.x=0;previewMarker.position.z=.025;previewMarker.visible=false;previewMarker.renderOrder=5;scene.add(previewMarker);
@@ -50,13 +50,13 @@ worker.onmessage=({data:f})=>{
   if(f.type==='scene')addGeoms(f.geoms,f.target);
   if(f.type==='preview'){
     const points=[];for(let i=0;i<f.points.length;i+=3)points.push(new THREE.Vector3(f.points[i],f.points[i+1],f.points[i+2]));
-    previewGeom.setFromPoints(points);previewLine.computeLineDistances();previewLine.visible=points.length>1;
-    const [x,y,z]=f.landing;previewMarker.position.set(x,y,.025);previewDot.position.set(x,y,Math.max(.05,z));previewMarker.visible=previewDot.visible=!!f.landed||!!f.net;
-    const coord=`(${x.toFixed(1)}, ${y.toFixed(1)}) m`;
-    $('serve-preview').innerHTML=f.net?`预计触网 <strong>${coord}</strong>`:f.landed?`预计落点 <strong>${coord}</strong><span>· ${f.time.toFixed(2)} s</span>`:'预计轨迹 <strong>计算中…</strong>';
-    $('serve-preview').classList.toggle('net',!!f.net);
+    previewGeom.setFromPoints(points);previewLine.computeLineDistances();previewLine.visible=points.length>1&&!!f.reachable;
+    const [x,y,z]=f.landing,[tx,ty]=f.target??f.landing;previewMarker.position.set(tx,ty,.025);previewDot.position.set(x,y,Math.max(.05,z));previewMarker.material.color.set(f.reachable?'#ffbc62':'#ff6675');previewMarker.visible=!!f.target||!!f.landed||!!f.net;previewDot.visible=!!f.reachable&&!!f.landed;
+    const targetCoord=`(${tx.toFixed(1)}, ${ty.toFixed(1)}) m`,landingCoord=`(${x.toFixed(1)}, ${y.toFixed(1)}) m`;
+    $('serve-preview').innerHTML=f.reachable?`目标落点 <strong>${targetCoord}</strong><span>预测 ${landingCoord} · pitch ${f.pitch.toFixed(1)}° · yaw ${f.yaw.toFixed(1)}°</span>`:`目标落点 <strong>${targetCoord}</strong><span>当前速度下不可达；提高速度或选择更近的位置</span>`;
+    $('serve-preview').classList.toggle('unreachable',!f.reachable);currentPreviewReachable=!!f.reachable;$('serve').disabled=!ready||!currentPreviewReachable;
   }
-  if(f.type==='ready'){ready=true;window.__rally.ready=true;$('loading').classList.add('hidden');['serve','pause','reset','push','ball-reset'].forEach(id=>$(id).disabled=false);}
+  if(f.type==='ready'){ready=true;window.__rally.ready=true;$('loading').classList.add('hidden');$('serve').disabled=!currentPreviewReachable;['pause','reset','push','ball-reset'].forEach(id=>$(id).disabled=false);}
   if(f.type==='frame'){
     latest=f;window.__rally.latest=f;
     $('ball-speed').textContent=Math.hypot(...f.ballVelocity).toFixed(2);
@@ -71,16 +71,11 @@ worker.onmessage=({data:f})=>{
   }
 };
 send('init',{embedded:packaged?.files,base:new URL('./',location.href).href,verify:new URLSearchParams(location.search).has('verify')});
-function values(){return {y:Number($('lateral').value),speed:Number($('speed').value),pitch:Number($('pitch').value),yaw:Number($('yaw').value)};}
-function serve(){endBallDrag();if(ready)send('launch',values());}
+function values(){return {speed:Number($('speed').value)};}
+function serve(){endBallDrag();if(ready&&currentPreviewReachable){send('settings',values());send('launch',values());}}
 $('serve').onclick=serve;$('pause').onclick=()=>{endBallDrag();send('pause');};$('reset').onclick=()=>{endBallDrag();send('reset');$('auto').checked=false;send('auto',{value:false});};$('ball-reset').onclick=()=>{endBallDrag();$('auto').checked=false;send('ball-reset');};$('push').onclick=()=>send('push');$('auto').onchange=e=>send('auto',{value:e.target.checked,...values()});
-for(const id of ['lateral','speed','pitch','yaw'])$(id).oninput=()=>{
-  const value=Number($(id).value);
-  $(`${id}-value`).textContent=id==='lateral'?`${value.toFixed(2)} m`:id==='speed'?`${value.toFixed(1)} m/s`:`${value.toFixed(0)}°`;
-  if(id==='lateral')for(const [preset,y]of [['forehand',-.65],['backhand',.65]])$(preset).classList.toggle('selected',Math.abs(value-y)<.026);
-  send('settings',values());
-};
-for(const [id,y]of [['forehand',-.65],['backhand',.65]])$(id).onclick=()=>{$('lateral').value=y;$('lateral').oninput();['forehand','backhand'].forEach(k=>$(k).classList.toggle('selected',id===k));};
+let speedPreviewTimer=null;
+$('speed').oninput=()=>{$('speed-value').textContent=`${Number($('speed').value).toFixed(1)} m/s`;clearTimeout(speedPreviewTimer);speedPreviewTimer=setTimeout(()=>send('settings',values()),90);};
 window.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','BUTTON'].includes((uiRoot.activeElement??document.activeElement).tagName)){e.preventDefault();serve();}if(e.code==='KeyR')$('reset').click();if(e.code==='KeyB')$('ball-reset').click();});
 // Pointer capture keeps the spring attached when the cursor leaves the ball.
 // Empty-space drags still go to OrbitControls; Ctrl uses the preselected ball.
@@ -98,7 +93,7 @@ function endBallDrag(){
   if(dragPointer===null)return;
   const id=dragPointer;dragPointer=null;
   if(renderer.domElement.hasPointerCapture(id))renderer.domElement.releasePointerCapture(id);
-  controls.enabled=true;tether.visible=false;renderer.domElement.style.cursor='grab';send('drag-end');
+  controls.enabled=true;tether.visible=false;renderer.domElement.style.cursor='crosshair';send('drag-end');
 }
 renderer.domElement.addEventListener('pointerdown',e=>{
   if(!ready||latest?.fallen||e.button!==0||dragPointer!==null)return;
@@ -123,6 +118,22 @@ renderer.domElement.addEventListener('pointermove',e=>{
 for(const event of ['pointerup','pointercancel','lostpointercapture'])renderer.domElement.addEventListener(event,e=>{
   if(e.pointerId!==dragPointer)return;endBallDrag();e.stopImmediatePropagation();
 },true);
+let targetPointer=null;const courtPlane=new THREE.Plane(new THREE.Vector3(0,0,1),0);
+renderer.domElement.addEventListener('pointerdown',e=>{
+  if(!ready||e.button!==0||e.ctrlKey||dragPointer!==null)return;
+  targetPointer={id:e.pointerId,x:e.clientX,y:e.clientY};
+},true);
+renderer.domElement.addEventListener('pointerup',e=>{
+  if(!targetPointer||targetPointer.id!==e.pointerId)return;
+  const start=targetPointer;targetPointer=null;
+  if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>5)return;
+  const box=renderer.domElement.getBoundingClientRect();pointerRay.setFromCamera(new THREE.Vector2((e.clientX-box.left)/box.width*2-1,1-(e.clientY-box.top)/box.height*2),camera);
+  const point=pointerRay.ray.intersectPlane(courtPlane,new THREE.Vector3());
+  if(!point||point.x< -8.3||point.x>3.4||Math.abs(point.y)>4.05)return;
+  send('target',{x:Math.round(point.x*10)/10,y:Math.round(point.y*10)/10});
+},true);
+renderer.domElement.addEventListener('pointercancel',e=>{if(targetPointer?.id===e.pointerId)targetPointer=null;},true);
+renderer.domElement.style.cursor='crosshair';
 window.addEventListener('blur',endBallDrag);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)endBallDrag();});
 new ResizeObserver(()=>{renderer.setSize(viewport.clientWidth,viewport.clientHeight);camera.aspect=viewport.clientWidth/viewport.clientHeight;camera.updateProjectionMatrix();}).observe(viewport);

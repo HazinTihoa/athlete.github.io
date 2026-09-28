@@ -5,7 +5,7 @@ import {Observations} from './observations.js';
 import {BallPerturbation} from './ball-perturbation.js';
 import {MAX_BALL_SPEED, limitBallSpeed} from './ball-speed.js';
 let mj,m,d,c,obs,session,drag,last=new Float32Array(29),paused=true,flying=false,fallen=false,predictionActive=false;
-let pending=null,age=0,hold=[6,-.65,1],warmup=0,steps=0,shot=null,auto=false,pushUntil=0,launchVelocity=[-3.5,0,4.5],interactiveTrack=false,serveSettings={y:-.65,speed:3.5,pitch:48,yaw:0};
+let pending=null,age=0,hold=[6,0,1],warmup=0,steps=0,shot=null,auto=false,pushUntil=0,launchVelocity=[-3.5,0,4.5],interactiveTrack=false,serveSettings={y:0,speed:7,pitch:30,yaw:0},serveTarget=[1.4,-.65];
 const send=(type,fields={})=>postMessage({type,...fields});
 const commands=[];
 onmessage=e=>{ if(e.data.type==='init')init(e.data).catch(fail);else commands.push(e.data); };
@@ -82,14 +82,29 @@ function predictFlight(position,velocity){
   return {points:path,landing:end,time,net,landed};
 }
 function sendServePreview(){
-  const y=Number(serveSettings.y??-.65),velocity=serveVelocity(serveSettings);
-  send('preview',predictFlight([6,y,1],velocity));
+  const solution=solveLanding(serveTarget,Number(serveSettings.speed??7));
+  if(!solution){send('preview',{points:[],landing:[...serveTarget,c.radius],target:serveTarget,reachable:false,landed:false,net:false,time:0});return;}
+  serveSettings={...serveSettings,y:0,pitch:solution.pitch,yaw:solution.yaw};
+  const flight=predictFlight([6,0,1],serveVelocity(serveSettings));
+  send('preview',{...flight,target:serveTarget,reachable:flight.landed&&!flight.net,error:solution.error,pitch:solution.pitch,yaw:solution.yaw});
+}
+function solveLanding(target,speed){
+  if(target[0]>=c.net_x-.05||target[0]<-8.3||Math.abs(target[1])>4.05)return null;
+  const yaw=Math.atan2(target[1],6-target[0])*180/Math.PI;
+  if(Math.abs(yaw)>68)return null;
+  let best=null;
+  for(let pitch=4;pitch<=76;pitch+=.5){
+    const flight=predictFlight([6,0,1],serveVelocity({speed,pitch,yaw}));
+    if(!flight.landed||flight.net)continue;
+    const error=Math.hypot(flight.landing[0]-target[0],flight.landing[1]-target[1]);
+    if(!best||error<best.error)best={pitch,yaw,error};
+  }
+  return best&&best.error<=.18?best:null;
 }
 function launch(cmd={}) {
   if(fallen)return;
   interactiveTrack=false;drag.stop();
-  const y=Number(cmd.y??-.65);
-  hold=[6,y,1];launchVelocity=serveVelocity(cmd);d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);limitBallSpeed(d.qvel,c.ball_vadr);
+  hold=[6,0,1];launchVelocity=serveVelocity({...serveSettings,...cmd});d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);limitBallSpeed(d.qvel,c.ball_vadr);
   flying=true;predictionActive=true;pending=null;obs.clearBall();paused=false;shot={hit:false,net:false,landing:null,start:d.time};mj.mj_forward(m,d);
 }
 function resetInteractiveBall(){
@@ -156,8 +171,9 @@ async function tick(){
       if(cmd.type==='drag-start')startDrag(cmd.position);
       if(cmd.type==='drag-target'&&drag.active)drag.setTarget(cmd.position);
       if(cmd.type==='drag-end')drag.stop();if(cmd.type==='launch'){serveSettings={...serveSettings,...cmd};launch(serveSettings);}
-      if(cmd.type==='settings'){serveSettings={...serveSettings,...cmd};if(!flying)sendServePreview();}
-      if(cmd.type==='auto'){auto=cmd.value;serveSettings={...serveSettings,...cmd};if(auto&&!flying)launch(serveSettings);}
+      if(cmd.type==='settings'){serveSettings={...serveSettings,...cmd};predictionActive=false;sendServePreview();}
+      if(cmd.type==='target'){serveTarget=[Number(cmd.x),Number(cmd.y)];predictionActive=false;sendServePreview();}
+      if(cmd.type==='auto'){auto=cmd.value;serveSettings={...serveSettings,...cmd};sendServePreview();if(auto&&!flying)launch(serveSettings);}
       if(cmd.type==='push')pushUntil=d.time+.15;
     }
     if(!paused&&!fallen){
