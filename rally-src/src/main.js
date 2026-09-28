@@ -12,6 +12,9 @@ scene.add(new THREE.HemisphereLight('#ecf4ff','#243341',1.8));const sun=new THRE
 const objects=new Map();const matrix=new THREE.Matrix4();
 let ready=false,latest=null,trail=[],lastTime=-1;
 const trailGeom=new THREE.BufferGeometry();const trailLine=new THREE.Line(trailGeom,new THREE.LineBasicMaterial({color:'#efff38',transparent:true,opacity:.85,toneMapped:false}));scene.add(trailLine);
+const previewGeom=new THREE.BufferGeometry();const previewLine=new THREE.Line(previewGeom,new THREE.LineDashedMaterial({color:'#5ce8ed',dashSize:.18,gapSize:.12,transparent:true,opacity:.9,toneMapped:false}));previewLine.visible=false;scene.add(previewLine);
+const previewMarker=new THREE.Mesh(new THREE.RingGeometry(.24,.31,48),new THREE.MeshBasicMaterial({color:'#ffbc62',transparent:true,opacity:.95,side:THREE.DoubleSide,depthTest:false,toneMapped:false}));previewMarker.rotation.x=0;previewMarker.position.z=.025;previewMarker.visible=false;previewMarker.renderOrder=5;scene.add(previewMarker);
+const previewDot=new THREE.Mesh(new THREE.SphereGeometry(.055,12,8),new THREE.MeshBasicMaterial({color:'#ffbc62',depthTest:false,toneMapped:false}));previewDot.visible=false;previewDot.renderOrder=6;scene.add(previewDot);
 const ballHalo=new THREE.Mesh(new THREE.SphereGeometry(.075,16,12),new THREE.MeshBasicMaterial({color:'#efff38',transparent:true,opacity:.16,depthWrite:false,toneMapped:false}));scene.add(ballHalo);
 function addGeoms(geoms,target){
   for(const g of geoms){const [x,y,z]=g.size;let geo;
@@ -45,6 +48,14 @@ worker.onmessage=({data:f})=>{
   if(f.type==='error')error(f.message);
   if(f.type==='parity'){window.__rally.parity=f;console.info('Parity',JSON.stringify(f));document.body.dataset.parity=JSON.stringify(f);}
   if(f.type==='scene')addGeoms(f.geoms,f.target);
+  if(f.type==='preview'){
+    const points=[];for(let i=0;i<f.points.length;i+=3)points.push(new THREE.Vector3(f.points[i],f.points[i+1],f.points[i+2]));
+    previewGeom.setFromPoints(points);previewLine.computeLineDistances();previewLine.visible=points.length>1;
+    const [x,y,z]=f.landing;previewMarker.position.set(x,y,.025);previewDot.position.set(x,y,Math.max(.05,z));previewMarker.visible=previewDot.visible=!!f.landed||!!f.net;
+    const coord=`(${x.toFixed(1)}, ${y.toFixed(1)}) m`;
+    $('serve-preview').innerHTML=f.net?`预计触网 <strong>${coord}</strong>`:f.landed?`预计落点 <strong>${coord}</strong><span>· ${f.time.toFixed(2)} s</span>`:'预计轨迹 <strong>计算中…</strong>';
+    $('serve-preview').classList.toggle('net',!!f.net);
+  }
   if(f.type==='ready'){ready=true;window.__rally.ready=true;$('loading').classList.add('hidden');['serve','pause','reset','push','ball-reset'].forEach(id=>$(id).disabled=false);}
   if(f.type==='frame'){
     latest=f;window.__rally.latest=f;
@@ -60,10 +71,15 @@ worker.onmessage=({data:f})=>{
   }
 };
 send('init',{embedded:packaged?.files,base:new URL('./',location.href).href,verify:new URLSearchParams(location.search).has('verify')});
-function values(){return {y:Number($('lateral').value),speed:Number($('speed').value),lift:Number($('lift').value)};}
+function values(){return {y:Number($('lateral').value),speed:Number($('speed').value),pitch:Number($('pitch').value),yaw:Number($('yaw').value)};}
 function serve(){endBallDrag();if(ready)send('launch',values());}
 $('serve').onclick=serve;$('pause').onclick=()=>{endBallDrag();send('pause');};$('reset').onclick=()=>{endBallDrag();send('reset');$('auto').checked=false;send('auto',{value:false});};$('ball-reset').onclick=()=>{endBallDrag();$('auto').checked=false;send('ball-reset');};$('push').onclick=()=>send('push');$('auto').onchange=e=>send('auto',{value:e.target.checked,...values()});
-for(const id of ['lateral','speed','lift'])$(id).oninput=()=>{$(`${id}-value`).textContent=`${Number($(id).value).toFixed(id==='lateral'?2:1)} ${id==='lateral'?'m':'m/s'}`;send('settings',values());};
+for(const id of ['lateral','speed','pitch','yaw'])$(id).oninput=()=>{
+  const value=Number($(id).value);
+  $(`${id}-value`).textContent=id==='lateral'?`${value.toFixed(2)} m`:id==='speed'?`${value.toFixed(1)} m/s`:`${value.toFixed(0)}°`;
+  if(id==='lateral')for(const [preset,y]of [['forehand',-.65],['backhand',.65]])$(preset).classList.toggle('selected',Math.abs(value-y)<.026);
+  send('settings',values());
+};
 for(const [id,y]of [['forehand',-.65],['backhand',.65]])$(id).onclick=()=>{$('lateral').value=y;$('lateral').oninput();['forehand','backhand'].forEach(k=>$(k).classList.toggle('selected',id===k));};
 window.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','BUTTON'].includes((uiRoot.activeElement??document.activeElement).tagName)){e.preventDefault();serve();}if(e.code==='KeyR')$('reset').click();if(e.code==='KeyB')$('ball-reset').click();});
 // Pointer capture keeps the spring attached when the cursor leaves the ball.

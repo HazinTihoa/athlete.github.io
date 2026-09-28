@@ -17,11 +17,13 @@ if (new URLSearchParams(location.search).has('embed')) {
     <li><span>按 <kbd>B</kbd></span><span>把球放回手边，再试一次</span></li>
   </ul>
 </section>
-<div class="lab"><section id="viewport" aria-label="网球机器人交互仿真"><div class="scene-top"><span class="badge" id="state">正在加载</span><span class="ball-speed" title="物理球总速度，上限 8 m/s">球速 <strong id="ball-speed">0.00</strong> / 8 m/s</span></div><div id="loading"><span class="spinner"></span><strong id="load-text">准备球场…</strong><p>首次加载需要下载模型与物理引擎，请稍候。</p></div><div class="scene-bottom"><span>拖球施力 · 拖空白旋转 · 滚轮缩放</span><button id="view">重置视角 ↗</button></div></section>
+<div class="lab"><section id="viewport" aria-label="网球机器人交互仿真"><div class="scene-top"><span class="badge" id="state">正在加载</span><span class="ball-speed" title="物理球总速度，上限 8 m/s">球速 <strong id="ball-speed">0.00</strong> / 8 m/s</span></div><div id="loading"><span class="spinner"></span><strong id="load-text">准备球场…</strong><p>首次加载需要下载模型与物理引擎，请稍候。</p></div><div class="scene-bottom"><div class="scene-keys"><span>拖球施力 · 拖空白旋转 · 滚轮缩放</span><span class="trajectory-key"><i></i>预测轨迹　<b></b>预计落点　<em></em>实际轨迹</span></div><button id="view">重置视角 ↗</button></div></section>
 <aside><div class="panel-heading"><span class="eyebrow">01 / SERVE</span><h2>创造你的来球</h2></div><div class="segmented"><button id="forehand" class="selected">正手侧</button><button id="backhand">反手侧</button></div>
-<label>左右位置 <output id="lateral-value">−0.65 m</output><input id="lateral" type="range" min="-1.3" max="1.3" step=".05" value="-.65"></label>
+<label>发球位置 · 左右 <output id="lateral-value">−0.65 m</output><input id="lateral" type="range" min="-1.3" max="1.3" step=".05" value="-.65"></label>
 <label>来球速度 <output id="speed-value">3.5 m/s</output><input id="speed" type="range" min="2.8" max="4.2" step=".1" value="3.5"></label>
-<label>向上速度 <output id="lift-value">4.5 m/s</output><input id="lift" type="range" min="3" max="5.5" step=".1" value="4.5"></label>
+<label title="相对水平面的发球仰角">仰角 · pitch <output id="pitch-value">48°</output><input id="pitch" type="range" min="32" max="65" step="1" value="48"></label>
+<label title="相对正前方的左右发球角度">方位角 · yaw <output id="yaw-value">0°</output><input id="yaw" type="range" min="-24" max="24" step="1" value="0"></label>
+<div class="serve-preview" id="serve-preview" aria-live="polite">预计落点 <strong>计算中…</strong></div>
 <button id="serve" class="primary" disabled>发球 <span>SPACE ↗</span></button><label class="toggle"><input id="auto" type="checkbox"> 连续发球 <small>每 7 秒一次</small></label>
 <div class="divider"></div><div class="panel-heading"><span class="eyebrow">02 / EXPLORE</span><h2>观察策略的反应</h2></div><div class="actions"><button id="pause" disabled>暂停 / 继续</button><button id="reset" disabled>重置机器人</button></div><button id="ball-reset" disabled>球回到手边 · B</button><button id="push" disabled>轻推机器人 ↗</button>
 </aside></div>

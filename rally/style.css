@@ -24,3 +24,12 @@
 .embedded .interaction-guide{margin-bottom:14px}
 .embedded .readouts{padding:18px 0 0;border:0}
 @media(max-width:650px){.embedded main{padding:10px}.embedded .readouts{gap:14px}}
+
+.serve-preview{margin:-2px 0 18px;padding:11px 12px;border:1px solid #dce9e6;border-radius:7px;background:#f4faf8;color:#61776f;font-size:11px;line-height:1.5}
+.serve-preview strong{display:block;margin-top:3px;color:#176c70;font-size:14px;font-weight:650;font-variant-numeric:tabular-nums}
+.serve-preview>span{display:block;margin-top:2px;color:#85968d;font-size:10px}
+.serve-preview.net{border-color:#f0d8bc;background:#fff9f0}.serve-preview.net strong{color:#a3612c}
+.scene-keys{display:flex;flex-direction:column;gap:5px}.trajectory-key{display:flex;align-items:center;gap:5px;color:#e3ecec;font-size:9px}
+.trajectory-key i,.trajectory-key b,.trajectory-key em{display:inline-block;width:15px;height:0;border-top:2px dashed #5ce8ed}
+.trajectory-key b{border-color:#ffbc62;border-style:solid}.trajectory-key em{border-color:#efff38;border-style:solid}
+@media(max-width:650px){.trajectory-key{font-size:8px}.scene-keys{gap:3px}}

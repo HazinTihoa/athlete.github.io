@@ -5,7 +5,7 @@ import {Observations} from './observations.js';
 import {BallPerturbation} from './ball-perturbation.js';
 import {MAX_BALL_SPEED, limitBallSpeed} from './ball-speed.js';
 let mj,m,d,c,obs,session,drag,last=new Float32Array(29),paused=true,flying=false,fallen=false;
-let pending=null,age=0,hold=[6,-.65,1],warmup=0,steps=0,shot=null,auto=false,pushUntil=0,launchVelocity=[-3.5,0,4.5],interactiveTrack=false,serveSettings={y:-.65,speed:3.5,lift:4.5};
+let pending=null,age=0,hold=[6,-.65,1],warmup=0,steps=0,shot=null,auto=false,pushUntil=0,launchVelocity=[-3.5,0,4.5],interactiveTrack=false,serveSettings={y:-.65,speed:3.5,pitch:48,yaw:0};
 const send=(type,fields={})=>postMessage({type,...fields});
 const commands=[];
 onmessage=e=>{ if(e.data.type==='init')init(e.data).catch(fail);else commands.push(e.data); };
@@ -52,14 +52,44 @@ async function parity(base) {
 function reset(){
   mj.mj_resetData(m,d);d.qpos.set(c.default_base,0);c.qadr.forEach((a,i)=>d.qpos[a]=c.initial_joints[i]);
   interactiveTrack=false;drag.stop();last.fill(0);obs.reset();flying=false;fallen=false;warmup=0;steps=0;pending=null;shot=null;pushUntil=0;
-  hold=[6,-.65,1];holdBall();mj.mj_forward(m,d);paused=true;frame(0);
+  hold=[6,-.65,1];holdBall();mj.mj_forward(m,d);paused=true;frame(0);sendServePreview();
 }
 function holdBall(){d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.fill(0,c.ball_vadr,c.ball_vadr+6);}
+function serveVelocity({speed=3.5,pitch=48,yaw=0}={}){
+  const elevation=Number(pitch)*Math.PI/180,heading=Number(yaw)*Math.PI/180,horizontal=Number(speed)*Math.cos(elevation);
+  return [-horizontal*Math.cos(heading),horizontal*Math.sin(heading),Number(speed)*Math.sin(elevation)];
+}
+function predictFlight(position,velocity){
+  const dt=.005,r=c.radius,a=c.aero,mass=a.mass_kg,wind=a.wind_w,path=[...position];
+  let net=false,landed=false,time=0;
+  for(let n=0;n<2400;n++){
+    const old=path.slice(-3),relative=velocity.map((v,i)=>v-wind[i]),speed=Math.hypot(...relative);
+    const drag=.5*a.air_density_kg_m3*c.physics.drag_coefficient*Math.PI*r*r*speed+6*Math.PI*r*a.dynamic_viscosity_pa_s;
+    const next=velocity.map((v,i)=>v-drag*relative[i]/mass*dt);
+    next[2]-=9.81*dt;
+    const cap=MAX_BALL_SPEED,current=Math.hypot(...next);if(current>cap)for(let i=0;i<3;i++)next[i]*=cap/current;
+    const point=old.map((v,i)=>v+next[i]*dt);time+=dt;
+    if(!net&&old[0]>c.net_x&&point[0]<=c.net_x){
+      const f=(old[0]-c.net_x)/(old[0]-point[0]),cross=old.map((v,i)=>v+(point[i]-v)*f);
+      if(cross[2]<.914+r&&Math.abs(cross[1])<5){cross[0]=c.net_x;path.push(...cross);net=true;break;}
+    }
+    if(point[2]<=r){
+      const f=(old[2]-r)/(old[2]-point[2]);path.push(old[0]+(point[0]-old[0])*f,old[1]+(point[1]-old[1])*f,r);landed=true;break;
+    }
+    path.push(...point);velocity=next;
+  }
+  const end=path.slice(-3);
+  return {points:path,landing:end,time,net,landed};
+}
+function sendServePreview(){
+  const y=Number(serveSettings.y??-.65),velocity=serveVelocity(serveSettings);
+  send('preview',predictFlight([6,y,1],velocity));
+}
 function launch(cmd={}) {
   if(fallen)return;
   interactiveTrack=false;drag.stop();
-  const y=Number(cmd.y??-.65),speed=Number(cmd.speed??3.5),lift=Number(cmd.lift??4.5);
-  hold=[6,y,1];launchVelocity=[-speed,0,lift];d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);limitBallSpeed(d.qvel,c.ball_vadr);
+  const y=Number(cmd.y??-.65);
+  hold=[6,y,1];launchVelocity=serveVelocity(cmd);d.qpos.set([...hold,1,0,0,0],c.ball_qadr);d.qvel.set([...launchVelocity,0,0,0],c.ball_vadr);limitBallSpeed(d.qvel,c.ball_vadr);
   flying=true;pending=null;obs.clearBall();paused=false;shot={hit:false,net:false,landing:null,start:d.time};mj.mj_forward(m,d);
 }
 function resetInteractiveBall(){
@@ -125,7 +155,7 @@ async function tick(){
       if(cmd.type==='drag-start')startDrag(cmd.position);
       if(cmd.type==='drag-target'&&drag.active)drag.setTarget(cmd.position);
       if(cmd.type==='drag-end')drag.stop();if(cmd.type==='launch'){serveSettings={...serveSettings,...cmd};launch(serveSettings);}
-      if(cmd.type==='settings')serveSettings={...serveSettings,...cmd};
+      if(cmd.type==='settings'){serveSettings={...serveSettings,...cmd};if(!flying)sendServePreview();}
       if(cmd.type==='auto'){auto=cmd.value;serveSettings={...serveSettings,...cmd};if(auto&&!flying)launch(serveSettings);}
       if(cmd.type==='push')pushUntil=d.time+.15;
     }
@@ -147,6 +177,7 @@ async function tick(){
       mj.mj_forward(m,d);steps++;
       fallen=d.qpos[2]<.35||d.xmat[c.pelvis_body*9+8]<Math.cos(70*Math.PI/180);
       if(!Array.from(d.qpos).every(Number.isFinite))throw Error('Nonfinite simulation state');
+      if(flying&&steps%6===0)send('preview',predictFlight(Array.from(d.qpos.slice(c.ball_qadr,c.ball_qadr+3)),Array.from(d.qvel.slice(c.ball_vadr,c.ball_vadr+3))));
       if(flying&&auto&&d.time-(shot?.start??0)>7)launch(serveSettings);
     }
     frame(performance.now()-start);
