@@ -1,16 +1,19 @@
-// No media request is made while the background is only a poster.
+// Hero background loop, full-length film dialog, header state, and scroll reveals.
 const heroVideo = document.getElementById('hero-video');
 const heroToggle = document.getElementById('hero-video-toggle');
-const heroStatus = document.querySelector('.hero-video-status');
+const heroProgress = document.querySelector('.hero-progress span');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
 if (heroVideo?.dataset.videoSrc) {
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const small = heroVideo.dataset.videoSrcSmall;
+  const saveData = navigator.connection?.saveData;
+  const useSmall = small && (window.matchMedia('(max-width: 900px)').matches || saveData);
   heroVideo.hidden = false;
   heroVideo.muted = true;
-  heroVideo.src = heroVideo.dataset.videoSrc;
-  heroVideo.preload = 'metadata';
+  heroVideo.src = useSmall ? small : heroVideo.dataset.videoSrc;
+  heroVideo.preload = 'auto';
   heroToggle.hidden = false;
-  heroStatus.textContent = 'DEMONSTRATION · SILENT LOOP';
-  let wantsPlayback = !reduceMotion.matches;
+  let wantsPlayback = !reduceMotion.matches && !saveData;
   let onScreen = true;
   const updatePlayback = () => {
     if (wantsPlayback && onScreen && !document.hidden) {
@@ -21,12 +24,16 @@ if (heroVideo?.dataset.videoSrc) {
     wantsPlayback = heroVideo.paused;
     updatePlayback();
   });
+  // Fade the video in over the poster only once frames are actually moving.
+  heroVideo.addEventListener('playing', () => heroVideo.classList.add('is-playing'));
   heroVideo.addEventListener('play', () => { heroToggle.textContent = 'Pause background'; });
   heroVideo.addEventListener('pause', () => { heroToggle.textContent = 'Play background'; });
+  heroVideo.addEventListener('timeupdate', () => {
+    if (heroProgress && heroVideo.duration) heroProgress.style.setProperty('--p', heroVideo.currentTime / heroVideo.duration);
+  });
   heroVideo.addEventListener('error', () => {
     wantsPlayback = false;
     heroVideo.hidden = true;
-    heroStatus.textContent = 'Video unavailable · Showing cover';
     heroToggle.hidden = true;
   });
   new IntersectionObserver(([entry]) => {
@@ -36,5 +43,75 @@ if (heroVideo?.dataset.videoSrc) {
   document.addEventListener('visibilitychange', updatePlayback);
   reduceMotion.addEventListener('change', () => {
     if (reduceMotion.matches) { wantsPlayback = false; updatePlayback(); }
+  });
+  if (!wantsPlayback) heroToggle.textContent = 'Play background';
+  updatePlayback();
+}
+
+// Full-length film: the video is only requested when the visitor opens it.
+const filmDialog = document.getElementById('film-dialog');
+const filmVideo = document.getElementById('film-video');
+if (filmDialog && filmVideo && typeof filmDialog.showModal === 'function') {
+  const closeFilm = () => filmDialog.close();
+  let resumeHero = false;
+  document.querySelectorAll('[data-film-open]').forEach(button => button.addEventListener('click', () => {
+    if (!filmVideo.src) filmVideo.src = filmVideo.dataset.src;
+    filmDialog.showModal();
+    document.body.classList.add('film-open');
+    resumeHero = Boolean(heroVideo && !heroVideo.paused);
+    heroVideo?.pause();
+    filmVideo.play().catch(() => {});
+  }));
+  filmDialog.querySelector('[data-film-close]').addEventListener('click', closeFilm);
+  filmDialog.addEventListener('click', event => { if (event.target === filmDialog) closeFilm(); });
+  filmDialog.addEventListener('close', () => {
+    filmVideo.pause();
+    document.body.classList.remove('film-open');
+    if (resumeHero) heroVideo.play().catch(() => {});
+  });
+} else {
+  // No <dialog> support: fall back to opening the file directly.
+  document.querySelectorAll('[data-film-open]').forEach(button => button.addEventListener('click', () => {
+    if (filmVideo) location.href = filmVideo.dataset.src;
+  }));
+}
+
+// Header turns solid once the visitor scrolls past the top of the hero.
+const header = document.querySelector('.site-header');
+const hero = document.querySelector('.hero-cinematic');
+if (header && hero) {
+  const setSolid = () => header.classList.toggle('is-solid', window.scrollY > 40);
+  setSolid();
+  window.addEventListener('scroll', setSolid, { passive: true });
+}
+
+// Highlight the nav link for the section in view.
+const navLinks = [...document.querySelectorAll('.site-header nav a[href^="#"]')];
+const sections = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+if ('IntersectionObserver' in window && sections.length) {
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      navLinks.forEach(a => a.classList.toggle('is-current', a.getAttribute('href') === `#${entry.target.id}`));
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  sections.forEach(section => spy.observe(section));
+}
+
+// Gentle reveal for research sections as they scroll into view.
+if (!reduceMotion.matches && 'IntersectionObserver' in window) {
+  const targets = document.querySelectorAll('.main-content > section, .main-content > figure, .main-content > .source-strip, .media-card, .method-steps article, .result-highlights > div, .results-grid > article');
+  document.documentElement.classList.add('js-reveal');
+  const reveal = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      reveal.unobserve(entry.target);
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+  targets.forEach((el, i) => {
+    el.classList.add('reveal');
+    el.style.transitionDelay = `${(i % 3) * 70}ms`;
+    reveal.observe(el);
   });
 }

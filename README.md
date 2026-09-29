@@ -91,11 +91,16 @@ PDF or source-repository link until its destination is supplied.
 
 ### Hero background video
 
-The first screen overlays the project title and navigation on a full-viewport
-poster. Until a source is supplied, the empty video stays hidden and no playback
-button is shown. To connect the real teaser, set `data-video-src` in
-`_includes/project-hero.html` to a relative media path and update the slot manifest.
-`assets/hero.js` provides muted looping playback, a pause/play button, poster
-fallback, and pause behavior while the hero is offscreen or the tab is hidden.
-Reduced-motion preferences keep playback opt-in. Run the homepage build script
-to update the anonymous entry after editing the hero include.
+The first screen plays a muted, looping 25 s cut of the real-world human–robot
+rally (`assets/video/hero-rally-1080.mp4`, with `hero-rally-720.mp4` for narrow
+screens or Save-Data). The poster `assets/video/hero-rally-poster.jpg` shows
+immediately and the video fades in once frames are playing. "Watch the rally"
+opens the full 38 s film (`assets/video/rally-full-1080.mp4`) in a dialog; that
+file is requested only when opened. The same film replaces the rally placeholder
+in the demonstrations section.
+
+All three encodes are H.264 with `+faststart`, no audio track and no source
+metadata. The two camera shots are cropped to 16:9. `assets/hero.js` handles
+pause/play, offscreen and hidden-tab pausing, reduced-motion (playback stays
+opt-in), the header's solid state after scrolling, nav highlighting and section
+reveals. Run the homepage build script after editing the hero include.

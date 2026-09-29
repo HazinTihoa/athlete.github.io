@@ -1,8 +1,9 @@
 {
   "hero-background": {
-    "poster": "real-world-overview.png",
-    "video": null,
-    "description": "Full-viewport muted looping background teaser"
+    "poster": "../video/hero-rally-poster.jpg",
+    "video": "../video/hero-rally-1080.mp4",
+    "description": "Full-viewport muted looping background: real-world human–robot rally (25 s cut)",
+    "video_small": "../video/hero-rally-720.mp4"
   },
   "overview": {
     "poster": "real-world-overview.png",
@@ -15,8 +16,8 @@
     "description": "Real-robot forehand and backhand returns"
   },
   "human-robot-rallies": {
-    "poster": "real-world-overview.png",
-    "video": null,
+    "poster": "../video/hero-rally-poster.jpg",
+    "video": "../video/rally-full-1080.mp4",
     "description": "Multi-shot human–robot rallies"
   },
   "trajectory-guided-motion-matching": {

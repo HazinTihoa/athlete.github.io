@@ -1,7 +1,14 @@
 <section class="hero hero-cinematic" aria-labelledby="project-title" data-video-slot="hero-background">
-<img class="hero-poster" src="./assets/project/real-world-overview.png" alt="ATHLETE humanoid tennis demonstrations" fetchpriority="high">
-<video hidden aria-hidden="true" id="hero-video" class="hero-video" poster="./assets/project/real-world-overview.png" data-video-src="" muted loop playsinline preload="none"></video>
+<img class="hero-poster" src="./assets/video/hero-rally-poster.jpg" alt="A Unitree G1 humanoid holding a tennis racket during a real-world rally" fetchpriority="high">
+<video hidden aria-hidden="true" id="hero-video" class="hero-video" poster="./assets/video/hero-rally-poster.jpg" data-video-src="./assets/video/hero-rally-1080.mp4" data-video-src-small="./assets/video/hero-rally-720.mp4" muted loop playsinline preload="none"></video>
 <div class="hero-shade" aria-hidden="true"></div>
-<div class="hero-copy"><p class="eyebrow">HUMANOID ROBOTICS · REACTIVE WHOLE-BODY CONTROL</p><h1 id="project-title">ATHLETE<span>Learning Reactive Humanoid Tennis<br>via Trajectory-Guided Motion Matching</span></h1></div>
-<div class="hero-bottom"><div class="hero-tags"><span>Locomotion</span><span>Forehand</span><span>Backhand</span><span>Rallies</span></div><div class="hero-media-actions"><span class="hero-video-status">VIDEO COMING SOON · 视频封面占位</span><button id="hero-video-toggle" type="button" aria-controls="hero-video" hidden>Play background</button><a href="#overview" class="hero-scroll">Explore the project ↓</a></div></div>
+<div class="hero-grain" aria-hidden="true"></div>
+<div class="hero-copy"><p class="eyebrow hero-reveal">HUMANOID ROBOTICS · REACTIVE WHOLE-BODY CONTROL</p><h1 id="project-title"><span class="hero-word hero-reveal">ATHLETE</span><span class="hero-sub hero-reveal">Learning Reactive Humanoid Tennis <br>via Trajectory-Guided Motion Matching</span></h1><div class="hero-cta hero-reveal"><button type="button" class="hero-watch" data-film-open aria-haspopup="dialog"><span class="hero-watch-icon" aria-hidden="true"></span>Watch the rally <small>0:38</small></button><a class="hero-try" href="#interactive-demo">Try it in your browser ↗</a></div></div>
+<div class="hero-bottom hero-reveal"><div class="hero-live"><span class="hero-live-dot" aria-hidden="true"></span><span>REAL ROBOT · HUMAN–ROBOT RALLY</span></div><div class="hero-tags"><span>Locomotion</span><span>Forehand</span><span>Backhand</span><span>Rallies</span></div><div class="hero-media-actions"><button id="hero-video-toggle" type="button" aria-controls="hero-video" hidden>Pause background</button><a href="#overview" class="hero-scroll">Explore <span aria-hidden="true">↓</span></a></div></div>
+<div class="hero-progress" aria-hidden="true"><span></span></div>
 </section>
+<dialog class="film-dialog" id="film-dialog" aria-label="Real-world human–robot rally video">
+<div class="film-frame"><video id="film-video" controls playsinline preload="none" poster="./assets/video/hero-rally-poster.jpg" data-src="./assets/video/rally-full-1080.mp4"></video></div>
+<p class="film-caption">Real-world human–robot rally · Unitree G1 · Silent footage</p>
+<button type="button" class="film-close" data-film-close aria-label="Close video">×</button>
+</dialog>
