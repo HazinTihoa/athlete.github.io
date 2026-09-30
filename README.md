@@ -22,8 +22,9 @@ GitHub Pages rebuilds the site after changes are committed to `main`.
 ## Interactive Rally Demo
 
 Both the GitHub Pages homepage (`index.md`) and anonymous static homepage
-(`index.html`) load the demo directly into a Shadow DOM component after the visitor clicks
-Start demo, and retain a
+(`index.html`) load the demo directly into a Shadow DOM component as soon as the
+visitor scrolls within about 600 px of it (no start screen; visitors with Save-Data
+enabled get a manual Start button instead), and retain a
 standalone `./rally/` link. Relative URLs keep anonymous visitors
 on their current host. The demo runs MuJoCo, ONNX policy inference, and rendering
 in the visitor's browser; there is no inference server or analytics endpoint.
@@ -56,7 +57,7 @@ external identity-bearing host, or third-party model CDN is required.
 Hex encoding avoids textual identity anonymization altering encoded binary data.
 The compressed payload is about 17.1 MB before hex transport encoding; actual
 network transfer depends on the host's HTTP compression. The page downloads
-these resources only after the visitor starts the embedded demo or opens its standalone page.
+these resources only when the visitor approaches the embedded demo or opens its standalone page.
 Homepage embed styling and loading logic live in `assets/home-demo.css` and
 `assets/home-demo.js`. No iframe is used: the anonymous host combines an opaque-origin CSP sandbox
 with `X-Frame-Options: SAMEORIGIN`, which blocks nested document embedding.

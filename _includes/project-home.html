@@ -17,13 +17,12 @@
 <section class="home-rally" aria-labelledby="interactive-demo">
 <p class="section-label">02 / INTERACTIVE DEMO</p><h2 id="interactive-demo">Your turn to serve.</h2>
 <p>Drag the ball, change its path, and watch the robot respond. The trained policy and physics simulation run entirely in your browser.</p>
+<p class="rally-keys">拖住黄色球施力，松手让它飞 · <kbd>Ctrl</kbd> + 拖动空白牵引球 · <kbd>Shift</kbd> + 拖球沿水平面移动 · <kbd>B</kbd> 把球放回手边 · 球速上限 8 m/s，推荐桌面 Chrome / Edge</p>
 <div class="rally-embed" data-rally-embed>
   <div class="rally-start-screen">
-    <span class="rally-kicker">ATHLETE / LIVE PLAYGROUND</span>
-    <h3>你来发球，让机器人回击。</h3>
-    <p>拖住黄色球施力，松手让它飞。<br><kbd>Ctrl</kbd> + 拖动空白牵引球 · <kbd>Shift</kbd> + 拖球沿水平面移动 · <kbd>B</kbd> 把球放回手边</p>
-    <button type="button" class="rally-start" aria-controls="rally-inline">开始体验 / Start demo ↗</button>
-    <p class="rally-download">点击后加载模型与物理引擎；首次加载请稍候。推荐桌面 Chrome / Edge，球速上限 8 m/s。</p>
+    <span class="rally-spinner" aria-hidden="true"></span>
+    <p class="rally-download" role="status">滚动到这里时自动加载仿真 · The simulation loads automatically</p>
+    <button type="button" class="rally-start" aria-controls="rally-inline" hidden>开始体验 / Start demo ↗</button>
   </div>
   <div id="rally-inline" class="rally-inline-host" data-base="./rally/" hidden></div>
 </div>
