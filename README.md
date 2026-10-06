@@ -87,8 +87,9 @@ Five future video positions use static paper figures and explicitly say
 replace the corresponding `data-video-slot` block with an HTML video player
 using `controls`, `playsinline`, `preload="none"`, and the existing poster.
 Use relative paths so the anonymous page does not send visitors to a named host.
-Regenerate `index.html` after changing the shared content. Do not publish a paper
-PDF or source-repository link until its destination is supplied.
+Regenerate `index.html` after changing the shared content. The Code button links
+to the anonymized repository at https://anonymous.4open.science/r/athlete-humanoid-tennis;
+do not publish a paper PDF link until its destination is supplied.
 
 ### Hero background video
 
