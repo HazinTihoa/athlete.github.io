@@ -2,6 +2,10 @@
 const heroVideo = document.getElementById('hero-video');
 const heroToggle = document.getElementById('hero-video-toggle');
 const heroProgress = document.querySelector('.hero-progress span');
+const setToggle = paused => {
+  heroToggle.classList.toggle('is-paused', paused);
+  heroToggle.setAttribute('aria-label', paused ? 'Play background video' : 'Pause background video');
+};
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 if (heroVideo?.dataset.videoSrc) {
@@ -17,7 +21,7 @@ if (heroVideo?.dataset.videoSrc) {
   let onScreen = true;
   const updatePlayback = () => {
     if (wantsPlayback && onScreen && !document.hidden) {
-      heroVideo.play().catch(() => { heroToggle.textContent = 'Play background'; });
+      heroVideo.play().catch(() => setToggle(true));
     } else heroVideo.pause();
   };
   heroToggle.addEventListener('click', () => {
@@ -26,8 +30,8 @@ if (heroVideo?.dataset.videoSrc) {
   });
   // Fade the video in over the poster only once frames are actually moving.
   heroVideo.addEventListener('playing', () => heroVideo.classList.add('is-playing'));
-  heroVideo.addEventListener('play', () => { heroToggle.textContent = 'Pause background'; });
-  heroVideo.addEventListener('pause', () => { heroToggle.textContent = 'Play background'; });
+  heroVideo.addEventListener('play', () => setToggle(false));
+  heroVideo.addEventListener('pause', () => setToggle(true));
   heroVideo.addEventListener('timeupdate', () => {
     if (heroProgress && heroVideo.duration) heroProgress.style.setProperty('--p', heroVideo.currentTime / heroVideo.duration);
   });
@@ -44,7 +48,7 @@ if (heroVideo?.dataset.videoSrc) {
   reduceMotion.addEventListener('change', () => {
     if (reduceMotion.matches) { wantsPlayback = false; updatePlayback(); }
   });
-  if (!wantsPlayback) heroToggle.textContent = 'Play background';
+  if (!wantsPlayback) setToggle(true);
   updatePlayback();
 }
 

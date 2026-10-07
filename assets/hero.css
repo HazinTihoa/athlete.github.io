@@ -89,3 +89,11 @@ body.film-open{overflow:hidden}
 }
 @media(max-height:620px) and (min-width:701px){.hero-cinematic{min-height:560px}.hero-copy{padding-top:110px;padding-bottom:26px}.hero-word{font-size:96px}.hero-copy h1 .hero-sub{font-size:26px;margin-top:14px}.hero-cta{margin-top:22px}.hero-copy .eyebrow{margin-bottom:14px}}
 @media(prefers-reduced-motion:reduce){.hero-reveal,.hero-poster,.hero-watch-icon:after,.hero-live-dot,.hero-scroll span,.film-dialog[open]{animation:none}.hero-video{transition:none}.js-reveal .reveal{opacity:1;transform:none;transition:none}}
+
+/* Minimal hero: corner play/pause control replaces the bottom bar */
+.hero-cinematic .hero-copy{padding-bottom:clamp(64px,11vh,120px)}
+.hero-toggle{position:absolute;right:max(24px,calc((100vw - 1240px)/2 + 32px));bottom:28px;width:38px;height:38px;border-radius:50%;border:1px solid #ffffff55;background:#0a1a1544;backdrop-filter:blur(6px);cursor:pointer;display:grid;place-items:center;opacity:.75;transition:opacity .2s,background .2s}
+.hero-toggle:hover{opacity:1;background:#0a1a1577}.hero-toggle[hidden]{display:none}
+.hero-toggle:before{content:"";width:10px;height:12px;border-left:3px solid #fff;border-right:3px solid #fff;box-sizing:border-box}
+.hero-toggle.is-paused:before{width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent #fff;margin-left:3px}
+@media(max-width:700px){.hero-cinematic .hero-copy{padding-bottom:72px}.hero-toggle{right:20px;bottom:20px}}
