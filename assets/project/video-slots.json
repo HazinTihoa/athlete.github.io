@@ -11,9 +11,9 @@
     "description": "Project overview / teaser"
   },
   "forehand-backhand": {
-    "poster": "striking.png",
-    "video": null,
-    "description": "Real-robot forehand and backhand returns"
+    "poster": "../video/real-serve-60-poster.jpg",
+    "video": "../video/real-serve-60.mp4",
+    "description": "Grid of 60 real-robot forehand and backhand trials (silent)"
   },
   "human-robot-rallies": {
     "poster": "../video/hero-rally-poster.jpg",
