@@ -112,3 +112,14 @@ body.film-open{overflow:hidden}
 }
 .hero-cinematic .hero-cta{align-items:center;gap:14px}
 .hero-cinematic .hero-cta .hero-toggle{position:static}
+
+/* Title, authors and links stacked in the bottom-left band */
+.hero-cinematic .hero-copy{flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:0}
+.hero-authors{margin:14px 0 0;font-size:14px;letter-spacing:.02em;color:#dfe8da}
+.hero-cinematic .hero-cta{margin-top:22px;flex-wrap:wrap;gap:10px 12px}
+.hero-link{display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 18px;border-radius:999px;border:1px solid #ffffff4d;background:#0a1a1540;backdrop-filter:blur(8px);color:#fff;font-size:13px;font-weight:600;white-space:nowrap;transition:background .2s,border-color .2s}
+.hero-link:hover{text-decoration:none;background:#ffffff1f;border-color:#ffffff99}
+.hero-watch{height:52px}
+.hero-cinematic .hero-toggle{position:absolute}
+@media(max-width:700px){.hero-link{height:40px;padding:0 14px;font-size:12px}.hero-authors{font-size:13px}}
+@media(max-width:700px){.hero-cinematic .hero-shade{background:linear-gradient(180deg,#06120fa6 0%,#06120f00 16%,#06120f00 30%,#06120fb3 52%,#06120ff2 78%)}}
