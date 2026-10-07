@@ -21,8 +21,8 @@
     "description": "Multi-shot human–robot rallies"
   },
   "trajectory-guided-motion-matching": {
-    "poster": "motion-matching.png",
-    "video": null,
-    "description": "TGMM reference-generation visualization"
+    "poster": "../video/tgmm-collection-poster.jpg",
+    "video": "../video/tgmm-collection.mp4",
+    "description": "TGMM batch data collection in simulation (44 s, silent)"
   }
 }

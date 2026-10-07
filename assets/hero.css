@@ -131,3 +131,7 @@ body.film-open{overflow:hidden}
 .hero-cinematic .hero-copy h1 .hero-sub{margin:10px auto 0}
 .hero-cinematic .hero-cta{justify-content:center}
 @media(max-width:700px){.hero-cinematic .hero-copy{align-items:center}.hero-cinematic .hero-word{font-size:clamp(42px,12vw,60px)}.hero-cinematic .hero-copy h1 br{display:inline}}
+
+/* TGMM data-collection video in the method section */
+.matching-detail .tgmm-video{aspect-ratio:180/137;height:auto;border-radius:10px;overflow:hidden;background:#3f5446}
+.matching-detail .tgmm-video video{object-fit:contain}

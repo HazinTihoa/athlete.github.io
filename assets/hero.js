@@ -119,3 +119,15 @@ if (!reduceMotion.matches && 'IntersectionObserver' in window) {
     reveal.observe(el);
   });
 }
+
+// Muted demo clips play while on screen and pause when scrolled away.
+if ('IntersectionObserver' in window) {
+  const clips = document.querySelectorAll('video[data-autoplay-visible]');
+  const watcher = new IntersectionObserver(entries => {
+    entries.forEach(({ target, isIntersecting }) => {
+      if (isIntersecting && !reduceMotion.matches) target.play().catch(() => {});
+      else if (!isIntersecting) target.pause();
+    });
+  }, { threshold: 0.35 });
+  clips.forEach(clip => watcher.observe(clip));
+}
