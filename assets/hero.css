@@ -152,3 +152,9 @@ section.tgmm-demo{max-width:none;margin:0 0 64px;display:grid;grid-template-colu
 section.tgmm-demo figure{margin:0}
 @media(max-width:1000px){section.tgmm-demo{gap:30px}}
 @media(max-width:700px){section.tgmm-demo{grid-template-columns:1fr;gap:18px;margin-bottom:40px}.tgmm-demo-copy h3{font-size:24px}}
+
+/* Smaller TGMM video with a playback-speed badge */
+section.tgmm-demo{grid-template-columns:minmax(0,1fr) minmax(0,520px);justify-content:space-between;gap:56px}
+.tgmm-demo .tgmm-video{position:relative}
+.speed-badge{position:absolute;top:12px;left:12px;z-index:1;padding:4px 10px;border-radius:999px;background:#0b1d18cc;color:#f2f7ea;font-size:11px;font-weight:700;letter-spacing:.04em;pointer-events:none}
+@media(max-width:700px){section.tgmm-demo{grid-template-columns:1fr}}
