@@ -24,5 +24,15 @@
     "poster": "../video/tgmm-collection-poster.jpg",
     "video": "../video/tgmm-collection.mp4",
     "description": "TGMM batch data collection in simulation (44 s, silent)"
+  },
+  "sim-rally-1": {
+    "poster": "../video/sim-rally1-poster.jpg",
+    "video": "../video/sim-rally1.mp4",
+    "description": "Simulated rally 1 in MuJoCo (real time, silent)"
+  },
+  "sim-rally-2": {
+    "poster": "../video/sim-rally2-poster.jpg",
+    "video": "../video/sim-rally2.mp4",
+    "description": "Simulated rally 2 in MuJoCo (real time, silent)"
   }
 }
