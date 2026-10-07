@@ -135,3 +135,12 @@ body.film-open{overflow:hidden}
 /* TGMM data-collection video in the method section */
 .matching-detail .tgmm-video{aspect-ratio:180/137;height:auto;border-radius:10px;overflow:hidden;background:#3f5446}
 .matching-detail .tgmm-video video{object-fit:contain}
+
+/* TGMM data-collection video below the abstract */
+.tgmm-demo{max-width:930px;margin:0 auto 64px}
+.tgmm-demo .tgmm-video{aspect-ratio:180/137;border-radius:12px;overflow:hidden;background:#3f5446}
+.tgmm-demo .tgmm-video video{object-fit:contain}
+.tgmm-demo figcaption{display:flex;gap:16px;padding-top:12px;font-size:12px;color:var(--muted)}
+.tgmm-demo figcaption span{flex-shrink:0;font-weight:700;color:var(--ink)}
+.matching-detail .tgmm-figure{border-radius:10px;overflow:hidden;background:#192d30}
+@media(max-width:700px){.tgmm-demo{margin-bottom:40px}.tgmm-demo figcaption{display:block}.tgmm-demo figcaption span{display:block;margin-bottom:4px}}
