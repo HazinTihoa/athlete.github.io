@@ -123,3 +123,11 @@ body.film-open{overflow:hidden}
 .hero-cinematic .hero-toggle{position:absolute}
 @media(max-width:700px){.hero-link{height:40px;padding:0 14px;font-size:12px}.hero-authors{font-size:13px}}
 @media(max-width:700px){.hero-cinematic .hero-shade{background:linear-gradient(180deg,#06120fa6 0%,#06120f00 16%,#06120f00 30%,#06120fb3 52%,#06120ff2 78%)}}
+
+/* Centered title band, smaller wordmark */
+.hero-cinematic .hero-copy{align-items:center;text-align:center}
+.hero-cinematic .hero-copy h1{text-align:center}
+.hero-cinematic .hero-word{font-size:clamp(44px,5.2vw,80px)}
+.hero-cinematic .hero-copy h1 .hero-sub{margin:10px auto 0}
+.hero-cinematic .hero-cta{justify-content:center}
+@media(max-width:700px){.hero-cinematic .hero-copy{align-items:center}.hero-cinematic .hero-word{font-size:clamp(42px,12vw,60px)}.hero-cinematic .hero-copy h1 br{display:inline}}
