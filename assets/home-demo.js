@@ -10,7 +10,7 @@ document.querySelectorAll('[data-rally-embed]').forEach(container => {
     const script = document.createElement('script');
     script.src = new URL(name, base).href;
     script.onload = resolve;
-    script.onerror = () => { script.remove(); reject(new Error(`无法加载 ${name}，请检查网络后重试。`)); };
+    script.onerror = () => { script.remove(); reject(new Error(`Could not load ${name}. Check your connection and try again.`)); };
     document.body.append(script);
   });
   const startDemo = async () => {
@@ -18,7 +18,7 @@ document.querySelectorAll('[data-rally-embed]').forEach(container => {
     loading = true;
     start.hidden = true;
     cover.classList.add('is-loading');
-    status.textContent = '正在加载仿真… / Loading simulation…';
+    status.textContent = 'Loading simulation…';
     try {
       await loadScript('embed-ui.js');
       const ui = window.__ATHLETE_EMBED_UI__;
@@ -32,7 +32,7 @@ document.querySelectorAll('[data-rally-embed]').forEach(container => {
       host.hidden = false;
       cover.hidden = true;
       for (let i = 0; i < ui.scripts.length; i++) {
-        root.getElementById('load-text').textContent = `加载模型与物理引擎 ${i + 1}/${ui.scripts.length}…`;
+        root.getElementById('load-text').textContent = `Loading model and physics engine ${i + 1}/${ui.scripts.length}…`;
         await loadScript(ui.scripts[i]);
       }
     } catch (error) {
@@ -41,7 +41,7 @@ document.querySelectorAll('[data-rally-embed]').forEach(container => {
       cover.hidden = false;
       cover.classList.remove('is-loading');
       start.hidden = false;
-      start.textContent = '重试 / Retry';
+      start.textContent = 'Retry';
       status.textContent = error.message;
     }
   };
@@ -49,7 +49,7 @@ document.querySelectorAll('[data-rally-embed]').forEach(container => {
   // Data-saver visitors keep the manual button; everyone else loads on approach.
   if (navigator.connection?.saveData) {
     start.hidden = false;
-    status.textContent = '已开启省流量模式，点击后加载约 17 MB 的模型与物理引擎。';
+    status.textContent = 'Data Saver is on. Click to load the model and physics engine (about 17 MB).';
   } else if ('IntersectionObserver' in window) {
     const near = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) { near.disconnect(); startDemo(); }

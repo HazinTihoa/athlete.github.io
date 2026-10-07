@@ -11,28 +11,28 @@
 <div class="source-strip" aria-label="Motion sources"><div><strong>16</strong><span>LAFAN1 locomotion sequences</span></div><div><strong>164</strong><span>Video-derived striking clips<br>97 forehand · 67 backhand</span></div><div><strong>10 min</strong><span>Source tennis practice video</span></div></div>
 <section class="abstract section-block" id="abstract" aria-labelledby="abstract-title"><p class="section-label">ABSTRACT</p><h2 id="abstract-title">From reusable motion to reactive tennis.</h2><p>Humanoid tennis requires reactive whole-body coordination under rapidly changing ball dynamics, yet collecting task-specific motion-capture demonstrations that cover diverse approach states, contact locations, and timing conditions is costly. Inspired by how humans acquire new skills by combining reusable motor experience with task-specific demonstrations, we present ATHLETE, a framework for learning reactive humanoid tennis from generic locomotion data and ordinary tennis videos. ATHLETE combines LAFAN1 locomotion with video-derived striking motions and uses Trajectory-Guided Motion Matching (TGMM) to construct diverse task-conditioned whole-body references. These references are transformed into a reactive policy through physics-based teacher–student learning with online DAgger distillation, followed by PPO fine-tuning for the tennis task. The resulting policy responds directly to robot and ball observations without requiring reference-motion inputs at deployment. On a real humanoid robot, ATHLETE achieves forehand and backhand hit rates of 90.00% and 86.67%, respectively, and enables multi-shot rallies with human players. These results demonstrate the feasibility of learning dynamic humanoid sports skills from reusable locomotion experience and low-cost visual demonstrations.</p></section>
 <figure class="hero-media">
-<div class="video-placeholder" data-video-slot="overview"><img src="./assets/project/real-world-overview.png" alt="Paper figure showing forehand and backhand returns and human–robot tennis rallies." loading="lazy"><span class="video-placeholder-label">VIDEO COMING SOON · 图片占位</span></div>
+<div class="video-placeholder" data-video-slot="overview"><img src="./assets/project/real-world-overview.png" alt="Paper figure showing forehand and backhand returns and human–robot tennis rallies." loading="lazy"><span class="video-placeholder-label">VIDEO COMING SOON</span></div>
 <figcaption><span>ATHLETE in action</span> Coordinating locomotion, striking, and balance to respond to incoming tennis balls. Static image from the paper; overview video forthcoming.</figcaption>
 </figure>
 <section class="home-rally" aria-labelledby="interactive-demo">
 <p class="section-label">02 / INTERACTIVE DEMO</p><h2 id="interactive-demo">Your turn to serve.</h2>
-<p>Drag the ball, change its path, and watch the robot respond. The trained policy and physics simulation run entirely in your browser.</p>
-<p class="rally-keys">拖住黄色球施力，松手让它飞 · <kbd>Ctrl</kbd> + 拖动空白牵引球 · <kbd>Shift</kbd> + 拖球沿水平面移动 · <kbd>B</kbd> 把球放回手边 · 球速上限 8 m/s，推荐桌面 Chrome / Edge</p>
+<p>Pick a landing target, serve, and watch the robot respond. The trained policy and physics simulation run entirely in your browser.</p>
+<p class="rally-keys"><strong>Serve:</strong> click the robot&rsquo;s side of the court to set a landing target, then press <kbd>Space</kbd> or <em>Serve to target</em>. <strong>Play freely:</strong> drag the yellow ball and release to throw it &middot; <kbd>Ctrl</kbd> + drag grabs the ball from anywhere &middot; <kbd>Shift</kbd> + drag moves it horizontally &middot; drag empty space to orbit &middot; <kbd>R</kbd> resets the robot. Thrown balls are capped at 8&nbsp;m/s. Best on desktop Chrome or Edge.</p>
 <div class="rally-embed" data-rally-embed>
   <div class="rally-start-screen">
     <span class="rally-spinner" aria-hidden="true"></span>
-    <p class="rally-download" role="status">滚动到这里时自动加载仿真 · The simulation loads automatically</p>
-    <button type="button" class="rally-start" aria-controls="rally-inline" hidden>开始体验 / Start demo ↗</button>
+    <p class="rally-download" role="status">The simulation loads automatically as you scroll here.</p>
+    <button type="button" class="rally-start" aria-controls="rally-inline" hidden>Start demo ↗</button>
   </div>
   <div id="rally-inline" class="rally-inline-host" data-base="./rally/" hidden></div>
 </div>
-<p class="rally-alternative"><a href="./rally/" target="_blank" rel="noopener">在独立页面打开 / Open full demo ↗</a></p>
+<p class="rally-alternative"><a href="./rally/" target="_blank" rel="noopener">Open the demo in a full page ↗</a></p>
 <noscript><p>Enable JavaScript to use the interactive demo.</p></noscript>
 </section>
 <section class="section-block" id="demonstrations" aria-labelledby="demonstrations-title">
 <div class="section-heading"><div><p class="section-label">03 / REAL-WORLD DEMONSTRATIONS</p><h2 id="demonstrations-title">Approach. Strike. Rally.</h2></div><p>Unitree G1 · Whole-body control<br>External motion-capture state estimation</p></div>
 <div class="media-grid"><article class="media-card">
-<div class="video-placeholder" data-video-slot="forehand-backhand"><img src="./assets/project/striking.png" alt="Real-robot experiments with incoming balls at different locations around the robot." loading="lazy"><span class="video-placeholder-label">VIDEO COMING SOON · 图片占位</span></div>
+<div class="video-placeholder" data-video-slot="forehand-backhand"><img src="./assets/project/striking.png" alt="Real-robot experiments with incoming balls at different locations around the robot." loading="lazy"><span class="video-placeholder-label">VIDEO COMING SOON</span></div>
 <div class="media-caption"><span class="tag">REACTIVE STRIKING</span><h3>Forehand and backhand returns</h3><p>Whole-body approach and striking motions adapt to different incoming-ball locations.</p></div></article><article class="media-card">
 <div class="demo-video-wrap" data-video-slot="human-robot-rallies"><video class="demo-video" controls muted playsinline preload="none" poster="./assets/video/hero-rally-poster.jpg" aria-label="Real-world human–robot tennis rally with a Unitree G1 humanoid"><source src="./assets/video/rally-full-1080.mp4" type="video/mp4"></video></div>
 <div class="media-caption"><span class="tag">HUMAN–ROBOT INTERACTION</span><h3>Keep the rally going</h3><p>The paper reports multi-shot rallies with novice and professional players. The longest observed sequences span five and eight rounds, respectively.</p></div></article></div>
@@ -43,7 +43,7 @@
 <figure class="framework"><img src="./assets/project/framework.png" alt="ATHLETE framework: trajectory-guided motion matching, dynamic correction, teacher training, online student distillation, PPO fine-tuning, and real-world deployment." loading="lazy"><figcaption>The ATHLETE pipeline, from heterogeneous motion sources to a deployed student policy.</figcaption></figure>
 <div class="method-steps"><article><span>01</span><h3>Time-adaptive teacher</h3><p>Track dynamically corrected references while adapting motion phase to the target contact deadline.</p></article><article><span>02</span><h3>Reactive student</h3><p>Use online DAgger and privileged representation alignment to transfer the teacher’s behavior to a policy driven by deployable observations.</p></article><article><span>03</span><h3>Task refinement</h3><p>Fine-tune with PPO, tennis-specific rewards, and domain randomization to improve contact precision and controlled returns.</p></article></div>
 <div class="matching-detail"><div><p class="section-label">TRAJECTORY-GUIDED MOTION MATCHING</p><h3>Turn isolated skills into an approach-and-strike motion.</h3><p>TGMM uses task, contact, and transition constraints to connect locomotion with a selected strike. Simulated imitation rollouts then produce dynamically corrected reference motions.</p><p class="section-note">Yellow: target ball. Blue: locomotion and approach. Green: striking motion and racket trajectory.</p></div><figure>
-<div class="video-placeholder" data-video-slot="trajectory-guided-motion-matching"><img src="./assets/project/motion-matching.png" alt="Generated approach-and-strike reference with optimized root path and racket trajectory." loading="lazy"><span class="video-placeholder-label">VIDEO COMING SOON · 图片占位</span></div>
+<div class="video-placeholder" data-video-slot="trajectory-guided-motion-matching"><img src="./assets/project/motion-matching.png" alt="Generated approach-and-strike reference with optimized root path and racket trajectory." loading="lazy"><span class="video-placeholder-label">VIDEO COMING SOON</span></div>
 <figcaption>Reference-generation visualization. Motion-matching video forthcoming.</figcaption></figure></div>
 </section>
 <section class="section-block" id="results" aria-labelledby="results-title">
