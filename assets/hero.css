@@ -97,3 +97,18 @@ body.film-open{overflow:hidden}
 .hero-toggle:before{content:"";width:10px;height:12px;border-left:3px solid #fff;border-right:3px solid #fff;box-sizing:border-box}
 .hero-toggle.is-paused:before{width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent #fff;margin-left:3px}
 @media(max-width:700px){.hero-cinematic .hero-copy{padding-bottom:72px}.hero-toggle{right:20px;bottom:20px}}
+
+/* Title band at the bottom so the background rally stays visible */
+.hero-cinematic .hero-copy{flex-direction:row;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;text-align:left;gap:20px 48px;padding-top:0;padding-bottom:clamp(40px,7vh,72px)}
+.hero-cinematic .hero-word{font-size:clamp(56px,7.2vw,108px)}
+.hero-cinematic .hero-copy h1 .hero-sub{margin:12px 0 0;max-width:none;font-size:clamp(18px,1.9vw,27px)}
+.hero-cinematic .hero-cta{margin-top:0;justify-content:flex-start}
+.hero-cinematic .hero-shade{background:linear-gradient(180deg,#06120fa6 0%,#06120f00 16%,#06120f00 55%,#06120fd9 88%,#06120ff2 100%)}
+@media(max-width:700px){
+.hero-cinematic .hero-copy{flex-direction:column;align-items:flex-start;gap:22px;padding-bottom:84px}
+.hero-cinematic .hero-word{font-size:clamp(52px,15vw,80px)}
+.hero-cinematic .hero-copy h1 .hero-sub{font-size:clamp(18px,5vw,24px)}
+.hero-cinematic .hero-shade{background:linear-gradient(180deg,#06120fa6 0%,#06120f00 18%,#06120f00 48%,#06120fe6 86%)}
+}
+.hero-cinematic .hero-cta{align-items:center;gap:14px}
+.hero-cinematic .hero-cta .hero-toggle{position:static}
