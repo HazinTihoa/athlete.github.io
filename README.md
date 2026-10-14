@@ -93,9 +93,9 @@ do not publish a paper PDF link until its destination is supplied.
 
 ### Hero background video
 
-The first screen plays a muted, looping 25 s cut of the real-world human–robot
-rally (`assets/video/hero-rally-1080.mp4`, with `hero-rally-720.mp4` for narrow
-screens or Save-Data). The poster `assets/video/hero-rally-poster.jpg` shows
+The first screen plays a muted, looping 25 s seven-strike real-world human–robot
+rally (`assets/video/hero-7strikes-1080.mp4`, with `hero-7strikes-720.mp4` for narrow
+screens or Save-Data). The poster `assets/video/hero-7strikes-poster.jpg` shows
 immediately and the video fades in once frames are playing. "Watch the rally"
 opens the full 38 s film (`assets/video/rally-full-1080.mp4`) in a dialog; that
 file is requested only when opened. The same film replaces the rally placeholder

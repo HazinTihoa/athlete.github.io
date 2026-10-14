@@ -1,9 +1,9 @@
 {
   "hero-background": {
-    "poster": "../video/hero-rally-poster.jpg",
-    "video": "../video/hero-rally-1080.mp4",
-    "description": "Full-viewport muted looping background: real-world human–robot rally (25 s cut)",
-    "video_small": "../video/hero-rally-720.mp4"
+    "poster": "../video/hero-7strikes-poster.jpg",
+    "video": "../video/hero-7strikes-1080.mp4",
+    "description": "Full-viewport muted looping background: real-world human–robot rally, seven strikes (25 s)",
+    "video_small": "../video/hero-7strikes-720.mp4"
   },
   "overview": {
     "poster": "real-world-overview.png",
